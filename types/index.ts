@@ -1,4 +1,4 @@
-export type ExecutionStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED' | 'pending_approval';
+export type ExecutionStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelled' | 'pending_approval';
 
 export type PlanType = 'free' | 'starter' | 'pro' | 'enterprise';
 

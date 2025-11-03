@@ -34,7 +34,7 @@ export default function ExecutionTrackerPage() {
   const router = useRouter();
   const executionId = params.executionId as string;
 
-  const [status, setStatus] = useState<ExecutionStatus>('RUNNING');
+  const [status, setStatus] = useState<ExecutionStatus>('running');
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
@@ -103,7 +103,7 @@ export default function ExecutionTrackerPage() {
           setCurrentStep(3);
         } else if (statusData.status === 'failed') {
           setProgress(100);
-          setStatus('FAILED');
+          setStatus('failed');
         }
 
         // Add log entry
@@ -131,7 +131,7 @@ export default function ExecutionTrackerPage() {
         console.error('Error polling execution status:', error);
         if (isMounted) {
           setLogs((prev) => [...prev, `[${new Date().toLocaleTimeString()}] Error: ${error instanceof Error ? error.message : 'Unknown error'}`]);
-          setStatus('FAILED');
+          setStatus('failed');
         }
       }
     };
@@ -154,21 +154,21 @@ export default function ExecutionTrackerPage() {
 
   const getStatusBadge = () => {
     switch (status) {
-      case 'RUNNING':
+      case 'running':
         return (
           <Badge className="bg-blue-100 text-blue-800">
             <Loader2 className="w-3 h-3 mr-1 animate-spin" />
             Running
           </Badge>
         );
-      case 'COMPLETED':
+      case 'completed':
         return (
           <Badge variant="success">
             <CheckCircle2 className="w-3 h-3 mr-1" />
             Completed
           </Badge>
         );
-      case 'FAILED':
+      case 'failed':
         return (
           <Badge variant="destructive">
             <XCircle className="w-3 h-3 mr-1" />
@@ -217,7 +217,7 @@ export default function ExecutionTrackerPage() {
               <CardHeader>
                 <CardTitle>Progress Overview</CardTitle>
                 <CardDescription>
-                  {status === 'COMPLETED'
+                  {status === 'completed'
                     ? 'Campaign generation completed successfully'
                     : 'Your campaign is being generated...'}
                 </CardDescription>
@@ -231,7 +231,7 @@ export default function ExecutionTrackerPage() {
                   <Progress value={progress} className="h-3" />
                 </div>
 
-                {status === 'COMPLETED' && (
+                {status === 'completed' && (
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex items-center gap-3">
                       <CheckCircle2 className="w-6 h-6 text-green-600" />
