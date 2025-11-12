@@ -37,6 +37,7 @@ import { campaignApi } from '@/lib/api';
 interface GeneratedContent {
   row: number;
   name: string;
+  product?: string;
   message: string;
   complianceScore: number;
   complianceStatus: 'pass' | 'warning' | 'fail';

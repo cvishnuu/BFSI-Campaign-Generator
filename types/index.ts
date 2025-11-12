@@ -73,14 +73,8 @@ export interface ExecutionResultsResponse {
 
 export interface GeneratedContentRow {
   row: number;
-  customerId: string;
   name: string;
-  phone: string;
-  email: string;
-  age: number;
-  city: string;
-  country: string;
-  occupation: string;
+  product: string;
   message: string;
   complianceScore: number;
   complianceStatus: string;
