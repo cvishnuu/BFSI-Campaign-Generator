@@ -46,12 +46,73 @@ export default function ResultsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [campaignResults, setCampaignResults] = useState<CampaignResult[]>([]);
+  const [loadingMessage, setLoadingMessage] = useState('Checking execution status...');
 
-  // Fetch real campaign results from API
+  // Fetch real campaign results from API with polling
   useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null;
+
+    const pollExecutionStatus = async () => {
+      try {
+        setLoadingMessage('Checking execution status...');
+        const statusResponse = await campaignApi.getExecutionStatus(executionId);
+
+        console.log('Execution status:', statusResponse.status);
+
+        // If still running or pending approval, keep polling
+        if (statusResponse.status === 'running' || statusResponse.status === 'pending' || statusResponse.status === 'pending_approval') {
+          setLoadingMessage(`Campaign is ${statusResponse.status}... Please wait`);
+          return false; // Not ready yet
+        }
+
+        // If failed, show error
+        if (statusResponse.status === 'failed') {
+          // Even if failed, try to fetch results (they might be partial)
+          setLoadingMessage('Execution failed, attempting to fetch partial results...');
+        }
+
+        // If completed or failed, fetch results
+        return true; // Ready to fetch results
+      } catch (err) {
+        console.error('Error polling status:', err);
+        return true; // Try to fetch results anyway
+      }
+    };
+
     const fetchResults = async () => {
       try {
         setIsLoading(true);
+
+        // First, poll until execution is complete
+        const isReady = await pollExecutionStatus();
+
+        if (!isReady) {
+          // Set up polling interval
+          pollInterval = setInterval(async () => {
+            const ready = await pollExecutionStatus();
+            if (ready) {
+              if (pollInterval) {
+                clearInterval(pollInterval);
+                pollInterval = null;
+              }
+              await loadResults();
+            }
+          }, 3000); // Poll every 3 seconds
+          return;
+        }
+
+        // If already ready, load results immediately
+        await loadResults();
+      } catch (err) {
+        console.error('Error in fetchResults:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load campaign results');
+        setIsLoading(false);
+      }
+    };
+
+    const loadResults = async () => {
+      try {
+        setLoadingMessage('Loading campaign results...');
         const response = await campaignApi.getExecutionResults(executionId);
 
         console.log('Received execution results:', response);
@@ -85,15 +146,22 @@ export default function ResultsPage() {
 
         console.log('Transformed results:', transformedResults);
         setCampaignResults(transformedResults);
+        setIsLoading(false);
       } catch (err) {
-        console.error('Error fetching execution results:', err);
+        console.error('Error loading results:', err);
         setError(err instanceof Error ? err.message : 'Failed to load campaign results');
-      } finally {
         setIsLoading(false);
       }
     };
 
     fetchResults();
+
+    // Cleanup polling on unmount
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
   }, [executionId]);
 
   const campaignSummary = {
@@ -187,7 +255,8 @@ export default function ResultsPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
-          <p className="text-lg text-gray-900">Loading campaign results...</p>
+          <p className="text-lg text-gray-900 mb-2">{loadingMessage}</p>
+          <p className="text-sm text-gray-600">This may take a few moments...</p>
         </div>
       </div>
     );
