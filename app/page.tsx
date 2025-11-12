@@ -65,8 +65,8 @@ export default function Home() {
             <span className="text-xl font-bold text-gray-900">BFSI Campaign Generator</span>
           </div>
           <nav className="flex items-center gap-4">
-            <Link href="/pricing">
-              <Button variant="ghost" className="text-gray-900 font-semibold">Pricing</Button>
+            <Link href="/contact">
+              <Button variant="ghost" className="text-gray-900 font-semibold">Contact Us</Button>
             </Link>
             <Link href="/login">
               <Button variant="outline" className="text-gray-900 font-semibold border-gray-300">Login</Button>
