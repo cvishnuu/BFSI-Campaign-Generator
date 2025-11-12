@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
 import {
   Sparkles,
   Upload,
@@ -68,12 +69,20 @@ export default function Home() {
             <Link href="/contact">
               <Button variant="ghost" className="text-gray-900 font-semibold">Contact Us</Button>
             </Link>
-            <Link href="/login">
-              <Button variant="outline" className="text-gray-900 font-semibold border-gray-300">Login</Button>
-            </Link>
-            <Link href="/signup">
-              <Button variant="default" className="bg-blue-600 text-white font-semibold">Sign Up Free</Button>
-            </Link>
+            <SignedOut>
+              <Link href="/login">
+                <Button variant="outline" className="text-gray-900 font-semibold border-gray-300">Login</Button>
+              </Link>
+              <Link href="/signup">
+                <Button variant="default" className="bg-blue-600 text-white font-semibold">Sign Up Free</Button>
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link href="/dashboard">
+                <Button variant="outline" className="text-gray-900 font-semibold border-gray-300">Dashboard</Button>
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </nav>
         </div>
       </header>

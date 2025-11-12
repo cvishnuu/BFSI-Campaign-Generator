@@ -15,6 +15,7 @@
     "test:all": "pnpm test:coverage && pnpm test:e2e"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.35.0",
     "@emailjs/browser": "^4.4.1",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-label": "^2.1.7",
