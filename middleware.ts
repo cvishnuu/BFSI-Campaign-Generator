@@ -6,6 +6,7 @@ const isProtectedRoute = createRouteMatcher([
   '/create(.*)',
   '/approval(.*)',
   '/results(.*)',
+  '/execution(.*)',
 ]);
 
 // Define public routes that should skip authentication entirely

@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/stores/auth-store';
+import { useUser } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -14,13 +13,21 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { CsvUpload } from '@/components/csv-upload';
 import { ColumnPreview } from '@/components/column-preview';
 import { ArrowLeft, Sparkles, MessageSquare, Loader2, AlertTriangle, Crown } from 'lucide-react';
-import { CampaignFormData, CsvPreviewData, CsvRow } from '@/types';
+import { CampaignFormData, CsvPreviewData, CsvRow, UsageStats } from '@/types';
 import { campaignApi } from '@/lib/api';
 
 export default function CreateCampaignPage() {
   const router = useRouter();
-  const { user, usageStats, isAuthenticated, canCreateCampaign, updateUsage } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const { user: clerkUser, isSignedIn, isLoaded } = useUser();
+  const [usageStats] = useState<UsageStats>({
+    userId: 'clerk-user',
+    campaignsGenerated: 0,
+    campaignsLimit: 3,
+    rowsProcessed: 0,
+    rowsLimit: 30,
+    periodStart: new Date().toISOString(),
+    periodEnd: new Date().toISOString(),
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showLimitDialog, setShowLimitDialog] = useState(false);
   const [limitMessage, setLimitMessage] = useState('');
@@ -33,16 +40,12 @@ export default function CreateCampaignPage() {
   });
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
+    if (isLoaded && !isSignedIn) {
       router.push('/login');
     }
-  }, [mounted, isAuthenticated, router]);
+  }, [isLoaded, isSignedIn, router]);
 
-  if (!mounted || !isAuthenticated || !user || !usageStats) {
+  if (!isLoaded || !isSignedIn) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-gray-900">Loading...</div>
@@ -50,7 +53,7 @@ export default function CreateCampaignPage() {
     );
   }
 
-  const handleCsvUpload = (rows: CsvRow[], file: File, preview: CsvPreviewData) => {
+  const handleCsvUpload = (rows: CsvRow[], file: File | null, preview: CsvPreviewData) => {
     setFormData((prev) => ({ ...prev, rows, csv: file, csvPreview: preview }));
   };
 
@@ -67,10 +70,17 @@ export default function CreateCampaignPage() {
       return;
     }
 
-    // Check usage limits
-    const limitCheck = canCreateCampaign(formData.rows.length);
-    if (!limitCheck.allowed) {
-      setLimitMessage(limitCheck.reason || 'Unable to create campaign');
+    const campaignsRemaining = usageStats.campaignsLimit - usageStats.campaignsGenerated;
+    const rowsRemaining = usageStats.rowsLimit - usageStats.rowsProcessed;
+
+    if (campaignsRemaining <= 0) {
+      setLimitMessage(`You've reached your campaign limit (${usageStats.campaignsLimit} campaigns per month). Please upgrade your plan.`);
+      setShowLimitDialog(true);
+      return;
+    }
+
+    if (formData.rows.length > rowsRemaining) {
+      setLimitMessage(`This campaign would exceed your row limit. You have ${rowsRemaining} rows remaining.`);
       setShowLimitDialog(true);
       return;
     }
@@ -78,13 +88,8 @@ export default function CreateCampaignPage() {
     setIsSubmitting(true);
 
     try {
-      // Call real API to start campaign
       const response = await campaignApi.startCampaign(formData);
 
-      // Update usage stats
-      updateUsage(1, formData.rows.length);
-
-      // Navigate to execution tracker with real execution ID
       router.push(`/execution/${response.executionId}`);
     } catch (error) {
       console.error('Error starting campaign:', error);
@@ -95,7 +100,7 @@ export default function CreateCampaignPage() {
   };
 
   const isFormValid =
-    formData.csv &&
+    !!formData.csv &&
     formData.rows.length > 0 &&
     formData.csvPreview?.hasAllRequired &&
     formData.prompt.trim();
@@ -104,6 +109,10 @@ export default function CreateCampaignPage() {
   const rowUsagePercent = (usageStats.rowsProcessed / usageStats.rowsLimit) * 100;
   const isNearCampaignLimit = campaignUsagePercent >= 80;
   const isNearRowLimit = rowUsagePercent >= 80;
+  const displayName =
+    clerkUser?.fullName ||
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    'User';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -118,7 +127,7 @@ export default function CreateCampaignPage() {
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-sm text-gray-700">
-              <span className="font-semibold text-gray-900">{user.name}</span> • {user.plan}
+              <span className="font-semibold text-gray-900">{displayName}</span> • Free
             </div>
           </div>
         </div>

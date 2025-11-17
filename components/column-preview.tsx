@@ -33,7 +33,7 @@ export function ColumnPreview({ preview }: ColumnPreviewProps) {
               )}
             </CardTitle>
             <CardDescription className="text-gray-700">
-              {totalRows} rows loaded " {columns.length} columns detected
+              {totalRows} rows loaded • {columns.length} columns detected
             </CardDescription>
           </div>
         </div>
@@ -82,7 +82,7 @@ export function ColumnPreview({ preview }: ColumnPreviewProps) {
         {!hasAllRequired && (
           <div className="p-3 bg-yellow-100 border border-yellow-300 rounded-lg">
             <p className="text-sm font-semibold text-yellow-900 mb-1">
-               Missing Required Columns:
+              Missing Required Columns:
             </p>
             <p className="text-sm text-yellow-800">
               {missingColumns.join(', ')}
@@ -116,15 +116,19 @@ export function ColumnPreview({ preview }: ColumnPreviewProps) {
                 <tbody>
                   {sampleRows.slice(0, 3).map((row, idx) => (
                     <tr key={idx} className="border-b hover:bg-gray-50">
-                      {columns.map((col) => (
-                        <td key={col} className="px-3 py-2 text-gray-700">
-                          {row[col]?.toString().substring(0, 30) || '-'}
-                          {row[col]?.toString().length > 30 ? '...' : ''}
-                        </td>
-                      ))}
-                    </tr>
+                  {columns.map((col) => (
+                    <td key={col} className="px-3 py-2 text-gray-700">
+                      {(() => {
+                        const cell = row[col];
+                        if (cell === null || cell === undefined) return '-';
+                        const text = cell.toString();
+                        return `${text.substring(0, 30)}${text.length > 30 ? '...' : ''}`;
+                      })()}
+                    </td>
                   ))}
-                </tbody>
+                </tr>
+              ))}
+            </tbody>
               </table>
             </div>
           </div>

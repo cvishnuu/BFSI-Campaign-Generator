@@ -2,7 +2,7 @@
  * API Client Tests
  * Target: 100% coverage
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { campaignApi } from '@/lib/api';
 import { mockCSVData, mockExecutionId } from '@/mocks/test-data';
 import { server } from '@/mocks/server';

@@ -30,7 +30,7 @@ export interface CsvRow {
   city: string;
   country: string;
   occupation: string;
-  [key: string]: any; // Allow additional custom columns
+  [key: string]: string | number | boolean | null | undefined; // Allow additional custom columns
 }
 
 export interface CsvPreviewData {
@@ -67,8 +67,10 @@ export interface ExecutionStatusResponse {
 export interface ExecutionResultsResponse {
   executionId: string;
   status: ExecutionStatus;
-  results: any;
-  output: any;
+  results: {
+    generatedContent?: GeneratedContentRow[];
+  } | null;
+  output: Record<string, unknown>;
 }
 
 export interface GeneratedContentRow {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -39,10 +39,22 @@ interface CampaignResult {
   complianceStatus: string;
   violations?: string[];
 }
+interface RawResultRow {
+  row?: number;
+  name?: string;
+  customer_name?: string;
+  generated_content?: string;
+  message?: string;
+  compliance_risk_score?: number;
+  complianceScore?: number;
+  compliance_status?: string;
+  compliance_flagged_terms?: string[];
+  violations?: string[];
+  [key: string]: unknown;
+}
 
 export default function ResultsPage() {
   const params = useParams();
-  const router = useRouter();
   const executionId = params.executionId as string;
 
   const [isDownloading, setIsDownloading] = useState(false);
@@ -125,25 +137,35 @@ export default function ResultsPage() {
         // 1. response.output.rows[] (from workflow output)
         // 2. response.output.approvalData.approvalData.rows[] (from manual approval node)
         // 3. response.output.approvalData.rows[] (alternative structure)
-        let rows = response.output?.rows || [];
+          let rows: RawResultRow[] = Array.isArray(response.output?.rows)
+            ? (response.output.rows as RawResultRow[])
+            : [];
 
         // If rows is empty, check approvalData structure
-        if (!rows || rows.length === 0) {
-          const approvalData = response.output?.approvalData;
-          if (approvalData) {
-            rows = approvalData.approvalData?.rows || approvalData.rows || [];
-          }
-        }
+            if (!rows || rows.length === 0) {
+              const approvalData = response.output?.approvalData as
+                | { approvalData?: { rows?: RawResultRow[] }; rows?: RawResultRow[] }
+                | undefined;
+              if (approvalData?.approvalData?.rows) {
+                rows = approvalData.approvalData.rows;
+              } else if (approvalData?.rows) {
+                rows = approvalData.rows;
+              }
+            }
 
         console.log('Extracted rows:', rows);
 
-        const transformedResults: CampaignResult[] = rows.map((item: any, index: number) => ({
-          row: item.row || index + 1,
+        const transformedResults: CampaignResult[] = rows.map((item, index) => ({
+          row: item.row ?? index + 1,
           name: item.name || item.customer_name || 'Unknown',
           message: item.generated_content || item.message || '',
-          complianceScore: 100 - (item.compliance_risk_score || item.complianceScore || 0), // Convert risk score to compliance score
-          complianceStatus: item.compliance_status === 'passed' || item.compliance_status === 'pass' ? 'pass' :
-                           item.compliance_status === 'failed' || item.compliance_status === 'fail' ? 'fail' : 'warning',
+          complianceScore: 100 - (Number(item.compliance_risk_score) || Number(item.complianceScore) || 0),
+          complianceStatus:
+            item.compliance_status === 'passed' || item.compliance_status === 'pass'
+              ? 'pass'
+              : item.compliance_status === 'failed' || item.compliance_status === 'fail'
+                ? 'fail'
+                : 'warning',
           violations: item.compliance_flagged_terms || item.violations || [],
         }));
 

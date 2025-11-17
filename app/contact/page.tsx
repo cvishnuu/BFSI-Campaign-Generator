@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Mail, Phone, MapPin, Send, CheckCircle2, Zap, MessageSquare, Building2, Clock } from "lucide-react";
+import { ArrowLeft, Mail, Send, CheckCircle2, Zap, MessageSquare, Building2, Clock } from "lucide-react";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -105,7 +105,7 @@ export default function ContactPage() {
         {/* Hero Section */}
         <div className="text-center mb-12">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 text-gray-900">Get in Touch</h1>
-          <p className="text-xl text-gray-700 max-w-2xl mx-auto">Have questions about our BFSI Campaign Generator? We're here to help you create compliant, personalized marketing campaigns.</p>
+          <p className="text-xl text-gray-700 max-w-2xl mx-auto">Have questions about our BFSI Campaign Generator? We&apos;re here to help you create compliant, personalized marketing campaigns.</p>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -114,7 +114,7 @@ export default function ContactPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-2xl text-gray-900">Send us a Message</CardTitle>
-                <CardDescription>Fill out the form below and we'll get back to you within 24 hours</CardDescription>
+                  <CardDescription>Fill out the form below and we&apos;ll get back to you within 24 hours</CardDescription>
               </CardHeader>
               <CardContent>
                 {isSubmitted ? (
@@ -123,7 +123,7 @@ export default function ContactPage() {
                       <CheckCircle2 className="w-8 h-8 text-green-600" />
                     </div>
                     <h3 className="text-2xl font-semibold text-gray-900 mb-2">Message Sent Successfully!</h3>
-                    <p className="text-gray-700">Thank you for contacting us. We'll get back to you soon.</p>
+                    <p className="text-gray-700">Thank you for contacting us. We&apos;ll get back to you soon.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
@@ -285,7 +285,7 @@ export default function ContactPage() {
                   <Zap className="w-6 h-6 text-purple-600" />
                 </div>
                 <CardTitle className="text-gray-900">Technical Support</CardTitle>
-                <CardDescription>Get help with integration, troubleshooting, or maximizing the platform's features for your use case.</CardDescription>
+                  <CardDescription>Get help with integration, troubleshooting, or maximizing the platform&apos;s features for your use case.</CardDescription>
               </CardHeader>
             </Card>
 

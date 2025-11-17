@@ -1,3 +1,5 @@
+'use client';
+
 import { SignUp } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Zap } from 'lucide-react';
@@ -18,10 +20,13 @@ export default function SignupPage() {
       {/* Main Content */}
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <SignUp
+          routing="path"
+          path="/signup"
+          afterSignUpUrl="/dashboard"
           appearance={{
             elements: {
-              rootBox: "mx-auto",
-              card: "shadow-lg",
+              rootBox: 'mx-auto',
+              card: 'shadow-lg',
             },
           }}
         />

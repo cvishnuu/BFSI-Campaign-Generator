@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   XCircle,
-  Download,
   Loader2,
   Eye,
   Shield,
@@ -43,6 +42,14 @@ interface GeneratedContent {
   complianceStatus: 'pass' | 'warning' | 'fail';
   violations?: string[];
 }
+type ApprovalRow = {
+  row: number;
+  name?: string;
+  message?: string;
+  complianceScore?: number;
+  complianceStatus?: string;
+  violations?: string[];
+};
 
 export default function ReviewApprovalPage() {
   const params = useParams();
@@ -50,7 +57,6 @@ export default function ReviewApprovalPage() {
   const executionId = params.executionId as string;
 
   const [isApproving, setIsApproving] = useState(false);
-  const [selectedRow, setSelectedRow] = useState<GeneratedContent | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -66,15 +72,19 @@ export default function ReviewApprovalPage() {
 
         // Transform the approval data to match our interface
         // Backend returns: approvalData.generatedContent[] with message, complianceScore, etc.
-        const rows = approvalData.approvalData?.generatedContent || [];
+        const rows = (approvalData.approvalData?.generatedContent || []) as ApprovalRow[];
 
-        const transformedContent: GeneratedContent[] = rows.map((row: any) => ({
+        const transformedContent: GeneratedContent[] = rows.map((row) => ({
           row: row.row,
           name: row.name || 'Unknown',
           message: row.message || '',
           complianceScore: row.complianceScore || 0,
-          complianceStatus: row.complianceStatus === 'pass' ? 'pass' :
-                           row.complianceStatus === 'fail' ? 'fail' : 'warning',
+          complianceStatus:
+            row.complianceStatus === 'pass'
+              ? 'pass'
+              : row.complianceStatus === 'fail'
+                ? 'fail'
+                : 'warning',
           violations: row.violations || [],
         }));
 
@@ -90,59 +100,6 @@ export default function ReviewApprovalPage() {
 
     fetchApprovalData();
   }, [executionId]);
-
-  // Fallback mock data for development (remove when backend is connected)
-  const mockGeneratedContent: GeneratedContent[] = [
-    {
-      row: 1,
-      name: 'John Smith',
-      product: 'Premium Credit Card',
-      message:
-        'Dear John, discover exclusive cashback benefits with our Premium Credit Card. Earn up to 5% on all purchases!',
-      complianceScore: 98,
-      complianceStatus: 'pass',
-    },
-    {
-      row: 2,
-      name: 'Sarah Johnson',
-      product: 'Investment Portfolio',
-      message:
-        'Hi Sarah, our curated Investment Portfolio offers balanced growth opportunities tailored to your financial goals.',
-      complianceScore: 92,
-      complianceStatus: 'pass',
-    },
-    {
-      row: 3,
-      name: 'Michael Chen',
-      product: 'Auto Loan',
-      message:
-        'Hello Michael, get pre-approved for an Auto Loan with competitive rates starting at 3.99% APR.',
-      complianceScore: 75,
-      complianceStatus: 'warning',
-      violations: [
-        'Consider adding disclaimer about rate variability',
-        'Include minimum credit score requirement',
-      ],
-    },
-    {
-      row: 4,
-      name: 'Emily Davis',
-      product: 'Home Mortgage',
-      message:
-        'Dear Emily, make your dream home a reality with our flexible Home Mortgage options and expert guidance.',
-      complianceScore: 95,
-      complianceStatus: 'pass',
-    },
-    {
-      row: 5,
-      name: 'Robert Wilson',
-      product: 'Personal Loan',
-      message:
-        'Hi Robert, need quick funds? Our Personal Loan offers instant approval with amounts up to $50,000.',
-      complianceScore: 88,
-      complianceStatus: 'pass',
-    },
-  ];
 
   const stats = {
     total: generatedContent.length,
@@ -341,7 +298,6 @@ export default function ReviewApprovalPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => setSelectedRow(content)}
                           >
                             <Eye className="w-4 h-4 mr-1" />
                             View

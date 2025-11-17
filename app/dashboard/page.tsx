@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore, PLAN_LIMITS } from '@/stores/auth-store';
+import { useAuth, useUser } from '@clerk/nextjs';
+import { campaignApi } from '@/lib/api';
+import { UsageStats, User } from '@/types';
+import { PLAN_LIMITS } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -20,20 +23,46 @@ import {
 
 export default function Dashboard() {
   const router = useRouter();
-  const { user, usageStats, isAuthenticated } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const { user: clerkUser, isSignedIn, isLoaded } = useUser();
+  const { getToken } = useAuth();
+  const [appUser, setAppUser] = useState<User | null>(null);
+  const [usageStats, setUsageStats] = useState<UsageStats | null>(null);
+  const [now] = useState(() => Date.now());
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const loadProfile = async () => {
+      if (!isLoaded) return;
+      if (!isSignedIn) {
+        router.push('/login');
+        return;
+      }
 
-  useEffect(() => {
-    if (mounted && !isAuthenticated) {
-      router.push('/login');
-    }
-  }, [mounted, isAuthenticated, router]);
+      try {
+        setAppUser({
+          id: clerkUser.id,
+          email: clerkUser.primaryEmailAddress?.emailAddress || '',
+          name: clerkUser.fullName || '',
+          plan: 'free',
+          createdAt: new Date().toISOString(),
+        });
+        setUsageStats({
+          userId: clerkUser.id,
+          campaignsGenerated: 0,
+          campaignsLimit: PLAN_LIMITS.free.campaignsLimit,
+          rowsProcessed: 0,
+          rowsLimit: PLAN_LIMITS.free.rowsLimit,
+          periodStart: new Date().toISOString(),
+          periodEnd: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error('Failed to load dashboard data', error);
+      }
+    };
 
-  if (!mounted || !isAuthenticated || !user || !usageStats) {
+    loadProfile();
+  }, [isLoaded, isSignedIn, getToken, router, clerkUser]);
+
+  if (!isLoaded || !isSignedIn || !appUser || !usageStats) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
         <div className="text-gray-900">Loading...</div>
@@ -41,13 +70,18 @@ export default function Dashboard() {
     );
   }
 
-  const planLimits = PLAN_LIMITS[user.plan];
+  const displayName =
+    appUser.name ||
+    clerkUser?.fullName ||
+    clerkUser?.primaryEmailAddress?.emailAddress ||
+    'User';
+  const planLimits = PLAN_LIMITS[appUser.plan];
   const campaignUsagePercent = (usageStats.campaignsGenerated / usageStats.campaignsLimit) * 100;
   const rowUsagePercent = (usageStats.rowsProcessed / usageStats.rowsLimit) * 100;
 
   // Calculate trial days remaining
-  const trialDaysRemaining = user.trialEndsAt
-    ? Math.max(0, Math.ceil((new Date(user.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+  const trialDaysRemaining = appUser.trialEndsAt
+    ? Math.max(0, Math.ceil((new Date(appUser.trialEndsAt).getTime() - now) / (1000 * 60 * 60 * 24)))
     : null;
 
   const planBadgeVariant = {
@@ -84,15 +118,15 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2 text-gray-900">
-            Welcome back, {user.name}!
+            Welcome back, {displayName}!
           </h1>
           <p className="text-gray-700">
-            Here's an overview of your account and usage statistics.
+            Here&apos;s an overview of your account and usage statistics.
           </p>
         </div>
 
         {/* Trial Alert */}
-        {user.plan === 'free' && trialDaysRemaining !== null && trialDaysRemaining <= 7 && (
+        {appUser.plan === 'free' && trialDaysRemaining !== null && trialDaysRemaining <= 7 && (
           <Card className="mb-6 border-yellow-200 bg-yellow-50">
             <CardContent className="p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -129,18 +163,18 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2 mb-4">
-                <Badge variant={planBadgeVariant[user.plan]} className="text-base px-3 py-1">
-                  {user.plan.charAt(0).toUpperCase() + user.plan.slice(1)}
+                <Badge variant={planBadgeVariant[appUser.plan]} className="text-base px-3 py-1">
+                  {appUser.plan.charAt(0).toUpperCase() + appUser.plan.slice(1)}
                 </Badge>
               </div>
-              {user.plan === 'free' && trialDaysRemaining !== null && (
+              {appUser.plan === 'free' && trialDaysRemaining !== null && (
                 <p className="text-sm text-gray-700 mb-4">
                   Trial ends in {trialDaysRemaining} {trialDaysRemaining === 1 ? 'day' : 'days'}
                 </p>
               )}
               <Link href="/pricing">
                 <Button variant="outline" className="w-full text-gray-900 border-gray-300">
-                  {user.plan === 'enterprise' ? 'Manage Plan' : 'Upgrade Plan'}
+                  {appUser.plan === 'enterprise' ? 'Manage Plan' : 'Upgrade Plan'}
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
@@ -171,7 +205,7 @@ export default function Dashboard() {
                 )}
                 {campaignUsagePercent >= 80 && usageStats.campaignsLimit !== -1 && (
                   <p className="text-xs text-yellow-700">
-                    You're running low on campaigns. Consider upgrading.
+                    You&apos;re running low on campaigns. Consider upgrading.
                   </p>
                 )}
               </div>

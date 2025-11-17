@@ -51,7 +51,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       usageStats: null,
 
-      login: async (email: string, password: string) => {
+      login: async (email: string) => {
         // TODO: Replace with actual API call
         // const response = await authApi.login(email, password);
         // set({ user: response.user, isAuthenticated: true });
@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthStore>()(
         await get().fetchUsageStats();
       },
 
-      signup: async (email: string, password: string, name: string) => {
+      signup: async (email: string, name: string) => {
         // TODO: Replace with actual API call
         // const response = await authApi.signup(email, password, name);
         // set({ user: response.user, isAuthenticated: true });

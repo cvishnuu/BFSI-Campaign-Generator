@@ -4,7 +4,6 @@
  */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { useAuthStore, PLAN_LIMITS } from '@/stores/auth-store';
-import { mockUser, mockUsageStats } from '@/mocks/test-data';
 
 describe('Auth Store', () => {
   beforeEach(() => {

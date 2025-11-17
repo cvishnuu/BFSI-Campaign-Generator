@@ -18,6 +18,7 @@ import {
   Shield,
   Sparkles,
 } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { ExecutionStatus } from '@/types';
 import { campaignApi } from '@/lib/api';
 
@@ -25,7 +26,7 @@ interface ExecutionStep {
   id: string;
   name: string;
   status: 'pending' | 'running' | 'completed' | 'failed';
-  icon: any;
+  icon: LucideIcon;
   description: string;
 }
 
@@ -85,7 +86,7 @@ export default function ExecutionTrackerPage() {
         if (!isMounted) return;
 
         // Update status
-        setStatus(statusData.status as any);
+        setStatus(statusData.status as ExecutionStatus);
 
         // Estimate progress based on status
         if (statusData.status === 'pending') {
@@ -93,8 +94,11 @@ export default function ExecutionTrackerPage() {
           setCurrentStep(0);
         } else if (statusData.status === 'running') {
           // Gradually increase progress
-          setProgress((prev) => Math.min(prev + 5, 85));
-          setCurrentStep(Math.min(Math.floor(progress / 30), 2));
+          setProgress((prev) => {
+            const next = Math.min(prev + 5, 85);
+            setCurrentStep(Math.min(Math.floor(next / 30), 2));
+            return next;
+          });
         } else if (statusData.status === 'pending_approval') {
           setProgress(90);
           setCurrentStep(2);
@@ -108,7 +112,7 @@ export default function ExecutionTrackerPage() {
 
         // Add log entry
         const timestamp = new Date().toLocaleTimeString();
-        if (statusData.status === 'running' && progress % 20 === 0) {
+        if (statusData.status === 'running') {
           setLogs((prev) => [...prev, `[${timestamp}] Workflow executing...`]);
         }
 

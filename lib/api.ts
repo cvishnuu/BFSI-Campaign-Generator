@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosRequestConfig } from 'axios';
 import {
   ExecutionResponse,
   ExecutionStatusResponse,
@@ -11,118 +11,69 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY || 'your-api-key-here';
 const WORKFLOW_ID = process.env.NEXT_PUBLIC_WORKFLOW_ID || 'workflow_bfsi_marketing_template';
 
-// Create axios instance with default config
-const apiClient = axios.create({
+const baseConfig: AxiosRequestConfig = {
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${API_KEY}`,
-  },
-});
-
-/**
- * API Client for BFSI Campaign Generator
- *
- * NOTE: These functions are currently stubbed with mock responses.
- * Replace with actual API calls when backend integration is ready.
- */
-export const campaignApi = {
-  /**
-   * Start a new campaign execution
-   */
-  startCampaign: async (formData: CampaignFormData): Promise<ExecutionResponse> => {
-    const response = await apiClient.post(`/public/agents/${WORKFLOW_ID}/execute`, {
-      input: {
-        csvData: formData.rows,
-        prompt: formData.prompt,
-        tone: formData.tone,
-      },
-      description: `BFSI Campaign: ${formData.prompt.substring(0, 50)}...`,
-    });
-    return response.data;
-  },
-
-  /**
-   * Get execution status
-   */
-  getExecutionStatus: async (executionId: string): Promise<ExecutionStatusResponse> => {
-    const response = await apiClient.get(`/public/executions/${executionId}/status`);
-    return response.data;
-  },
-
-  /**
-   * Get execution results
-   */
-  getExecutionResults: async (executionId: string): Promise<ExecutionResultsResponse> => {
-    const response = await apiClient.get(`/public/executions/${executionId}/results`);
-    return response.data;
-  },
-
-  /**
-   * Get pending approval data
-   */
-  getPendingApproval: async (executionId: string): Promise<PendingApprovalData> => {
-    const response = await apiClient.get(`/public/executions/${executionId}/pending-approval`);
-    return response.data;
-  },
-
-  /**
-   * Approve campaign
-   */
-  approveCampaign: async (executionId: string): Promise<void> => {
-    await apiClient.post(`/public/executions/${executionId}/approve`, {
-      comment: 'Campaign approved from BFSI UI',
-    });
-  },
-
-  /**
-   * Reject campaign
-   */
-  rejectCampaign: async (executionId: string, reason?: string): Promise<void> => {
-    await apiClient.post(`/public/executions/${executionId}/reject`, {
-      comment: reason || 'Campaign rejected from BFSI UI',
-    });
+    Authorization: `Bearer ${API_KEY}`,
   },
 };
 
-/**
- * WebSocket connection for real-time updates
- *
- * NOTE: This is stubbed. Implement actual WebSocket connection when ready.
- */
-export class ExecutionWebSocket {
-  private executionId: string;
-  private onStatusUpdate?: (status: ExecutionStatusResponse) => void;
-  private onLog?: (log: string) => void;
+const withAuth = (token?: string | null): AxiosRequestConfig => ({
+  ...baseConfig,
+  headers: {
+    ...baseConfig.headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  },
+});
 
-  constructor(executionId: string) {
-    this.executionId = executionId;
-  }
+export const campaignApi = {
+  startCampaign: async (formData: CampaignFormData, token?: string | null): Promise<ExecutionResponse> => {
+    const response = await axios.post(
+      `/public/agents/${WORKFLOW_ID}/execute`,
+      {
+        input: {
+          csvData: formData.rows,
+          prompt: formData.prompt,
+          tone: formData.tone,
+        },
+        description: `BFSI Campaign: ${formData.prompt.substring(0, 50)}...`,
+      },
+      withAuth(token)
+    );
+    return response.data;
+  },
 
-  connect() {
-    // TODO: Implement WebSocket connection
-    // const ws = new WebSocket(`ws://localhost:3001/executions/${this.executionId}`);
-    // ws.onmessage = (event) => {
-    //   const data = JSON.parse(event.data);
-    //   if (data.type === 'status') this.onStatusUpdate?.(data);
-    //   if (data.type === 'log') this.onLog?.(data.message);
-    // };
+  getExecutionStatus: async (executionId: string, token?: string | null): Promise<ExecutionStatusResponse> => {
+    const response = await axios.get(`/public/executions/${executionId}/status`, withAuth(token));
+    return response.data;
+  },
 
-    console.log('WebSocket connection (stubbed):', this.executionId);
-  }
+  getExecutionResults: async (executionId: string, token?: string | null): Promise<ExecutionResultsResponse> => {
+    const response = await axios.get(`/public/executions/${executionId}/results`, withAuth(token));
+    return response.data;
+  },
 
-  onStatus(callback: (status: ExecutionStatusResponse) => void) {
-    this.onStatusUpdate = callback;
-  }
+  getPendingApproval: async (executionId: string, token?: string | null): Promise<PendingApprovalData> => {
+    const response = await axios.get(`/public/executions/${executionId}/pending-approval`, withAuth(token));
+    return response.data;
+  },
 
-  onLogMessage(callback: (log: string) => void) {
-    this.onLog = callback;
-  }
+  approveCampaign: async (executionId: string, token?: string | null): Promise<void> => {
+    await axios.post(
+      `/public/executions/${executionId}/approve`,
+      { comment: 'Campaign approved from BFSI UI' },
+      withAuth(token)
+    );
+  },
 
-  disconnect() {
-    // TODO: Close WebSocket connection
-    console.log('WebSocket disconnected (stubbed)');
-  }
-}
+  rejectCampaign: async (executionId: string, reason?: string, token?: string | null): Promise<void> => {
+    await axios.post(
+      `/public/executions/${executionId}/reject`,
+      { comment: reason || 'Campaign rejected from BFSI UI' },
+      withAuth(token)
+    );
+  },
+};
 
-export default apiClient;
+export default axios.create(baseConfig);

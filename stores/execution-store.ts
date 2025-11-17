@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { ExecutionStatus, ExecutionStatusResponse, PendingApprovalData } from '@/types';
+import { ExecutionStatus, PendingApprovalData } from '@/types';
 
 interface ExecutionStore {
   // Current execution state

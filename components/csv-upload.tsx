@@ -9,7 +9,7 @@ import * as XLSX from 'xlsx';
 import { CsvPreviewData, CsvRow } from '@/types';
 
 interface CsvUploadProps {
-  onUpload: (rows: CsvRow[], file: File, preview: CsvPreviewData) => void;
+  onUpload: (rows: CsvRow[], file: File | null, preview: CsvPreviewData) => void;
   maxRows?: number;
 }
 
@@ -19,6 +19,7 @@ export function CsvUpload({ onUpload, maxRows = 100 }: CsvUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  type RawRow = Record<string, unknown>;
 
   const processFile = useCallback(
     async (uploadedFile: File) => {
@@ -28,13 +29,13 @@ export function CsvUpload({ onUpload, maxRows = 100 }: CsvUploadProps) {
       try {
         const reader = new FileReader();
 
-        reader.onload = (e) => {
+        reader.onload = (e: ProgressEvent<FileReader>) => {
           try {
             const data = e.target?.result;
             const workbook = XLSX.read(data, { type: 'binary' });
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
-            const jsonData = XLSX.utils.sheet_to_json(worksheet);
+            const jsonData = XLSX.utils.sheet_to_json<RawRow>(worksheet);
 
             if (jsonData.length === 0) {
               setError('The CSV file is empty. Please upload a file with data.');
@@ -51,7 +52,7 @@ export function CsvUpload({ onUpload, maxRows = 100 }: CsvUploadProps) {
             }
 
             // Get column names (preserve original casing)
-            const firstRow = jsonData[0] as any;
+            const firstRow = jsonData[0] as RawRow;
             const columns = Object.keys(firstRow);
             const columnsLowerMap = new Map(columns.map(col => [col.toLowerCase().trim(), col]));
 
@@ -61,16 +62,16 @@ export function CsvUpload({ onUpload, maxRows = 100 }: CsvUploadProps) {
             );
 
             // Normalize data - map to standardized column names (preserve values, standardize keys)
-            const normalizedData = jsonData.map((row: any) => {
-              const normalizedRow: any = {};
+            const normalizedData = jsonData.map((row: RawRow) => {
+              const normalizedRow: Record<string, unknown> = {};
               for (const [key, value] of Object.entries(row)) {
                 const lowerKey = key.toLowerCase().trim();
                 // Find the matching required column name
                 const standardKey = REQUIRED_COLUMNS.find(reqCol => reqCol.toLowerCase() === lowerKey) || key;
                 normalizedRow[standardKey] = value;
               }
-              return normalizedRow;
-            }) as CsvRow[];
+              return normalizedRow as CsvRow;
+            });
 
             // Generate preview data (use standardized column names)
             const standardizedColumns = columns.map(col => {
@@ -143,7 +144,7 @@ export function CsvUpload({ onUpload, maxRows = 100 }: CsvUploadProps) {
       missingColumns: [],
       hasAllRequired: false,
     };
-    onUpload([], null as any, emptyPreview);
+    onUpload([], null, emptyPreview);
   };
 
   return (
