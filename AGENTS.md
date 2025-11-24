@@ -18,12 +18,33 @@
 - WAM backend uses `ClerkAuthGuard` on these public endpoints. It now **accepts an API key** if it matches `PUBLIC_API_KEY` in WAM backend env, or a valid Clerk token.
 - To avoid 401/“invalid API key”, ensure WAM backend `.env` has `PUBLIC_API_KEY` set to the same value as BCG’s `NEXT_PUBLIC_API_KEY`, then restart the WAM backend.
 
+## Project Structure Highlights
+- **Frontend surface (App Router)**
+  - `app/page.tsx`: marketing landing page.
+  - `app/dashboard/page.tsx`: user dashboard showing usage stats (currently uses mock usage info; ensures user is signed in via Clerk).
+  - `app/create/page.tsx`: CSV upload, prompt/tone input, usage limit checks, submission to WAM.
+  - Dynamic flows: `app/execution/[executionId]`, `app/review/[executionId]`, `app/results/[executionId]`.
+  - Auth pages: `app/login/[[...rest]]`, `app/signup/[[...rest]]` (Clerk `<SignIn>` / `<SignUp>` components).
+  - Global styles: `app/globals.css`.
+- **Components & libs**
+  - `components/csv-upload.tsx`, `components/column-preview.tsx` handle CSV ingestion/validation.
+  - `components/ui/*`: shadcn UI primitives (button, input, textarea, card, etc.).
+  - `stores/auth-store.ts`, `stores/execution-store.ts`: legacy Zustand stores (largely unused since Clerk adoption but still present).
+  - `lib/api.ts`: Axios client pointing to WAM public API with API key headers.
+  - `lib/utils.ts`: utility helpers (cn, etc.).
+- **Testing configs**
+  - Unit tests under `__tests__/`.
+  - `vitest.config.ts`, `playwright.config.ts`, `vitest.setup.ts`.
+  - Sample data: `sample-customers-new.csv`, `test-customers.csv`.
+- **Configs**: `next.config.ts`, `tsconfig.json`, `eslint.config.mjs`, `postcss.config.mjs`, `tailwind` config.
+
 ## Dev Scripts
 - Root `package.json`:
   - `dev`: runs backend BFF (ts-node-dev) and Next frontend. BFF is optional; it isn’t used by the current workflow calls.
-  - `dev:frontend`: Next dev.
-  - `dev:bff`: BFF dev (ESM). If it complains about ts-node-dev, you can ignore; BFF isn’t needed for WAM calls.
-- WAM (separate repo `workflow-automation-mvp`): `npm run dev` uses turbo to start frontend+backend; backend expects `PUBLIC_API_KEY`, database, and Clerk envs.
+  - `dev:frontend`: Next dev server only.
+  - `dev:bff`: Launches the ESM BFF (`apps/bff`); safe to ignore failures since workflow calls hit WAM directly.
+  - Testing scripts: `pnpm test`, `pnpm test:coverage`, `pnpm test:e2e`.
+- WAM (separate repo `workflow-automation-mvp`): `npm run dev` spins up both backend + frontend via Turborepo; ensure DB/Clerk/API key envs are present.
 
 ## Key Files
 - `lib/api.ts`: API client to WAM using API key.
@@ -49,4 +70,3 @@
 - Verify WAM `PUBLIC_API_KEY` matches BCG `NEXT_PUBLIC_API_KEY` and WAM backend restarted.
 - Ensure BCG calls aren’t using Clerk tokens for WAM endpoints (lib/api.ts handles this by API key only).
 - Check WAM backend logs; the guard falls back to API key if provided.
-

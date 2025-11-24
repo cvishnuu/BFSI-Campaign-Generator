@@ -14,6 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -22,6 +23,7 @@ import {
   Loader2,
   Eye,
   Shield,
+  Brain,
 } from 'lucide-react';
 import {
   Dialog,
@@ -32,6 +34,8 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { campaignApi } from '@/lib/api';
+import { XaiReasoningPanel, ComplianceXaiPanel } from '@/components/xai';
+import { XaiMetadata, ComplianceXaiMetadata } from '@/types';
 
 interface GeneratedContent {
   row: number;
@@ -41,6 +45,8 @@ interface GeneratedContent {
   complianceScore: number;
   complianceStatus: 'pass' | 'warning' | 'fail';
   violations?: string[];
+  xai?: XaiMetadata;
+  compliance_xai?: ComplianceXaiMetadata;
 }
 type ApprovalRow = {
   row: number;
@@ -49,6 +55,8 @@ type ApprovalRow = {
   complianceScore?: number;
   complianceStatus?: string;
   violations?: string[];
+  xai?: XaiMetadata;
+  compliance_xai?: ComplianceXaiMetadata;
 };
 
 export default function ReviewApprovalPage() {
@@ -86,6 +94,8 @@ export default function ReviewApprovalPage() {
                 ? 'fail'
                 : 'warning',
           violations: row.violations || [],
+          xai: row.xai,
+          compliance_xai: row.compliance_xai,
         }));
 
         console.log('Transformed content:', transformedContent);
@@ -303,11 +313,11 @@ export default function ReviewApprovalPage() {
                             View
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="max-w-2xl">
+                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle>Message Details - Row {content.row}</DialogTitle>
                             <DialogDescription>
-                              Review the complete message and compliance details
+                              Review the complete message, compliance details, and AI explainability
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">
@@ -324,32 +334,35 @@ export default function ReviewApprovalPage() {
                             <div>
                               <Label className="text-sm font-semibold flex items-center gap-2">
                                 <Shield className="w-4 h-4" />
-                                Compliance Analysis
+                                Compliance Score
                               </Label>
-                              <div className="mt-2 space-y-2">
-                                <div className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                  <span className="text-sm text-gray-900">Score</span>
-                                  {getComplianceBadge(
-                                    content.complianceStatus,
-                                    content.complianceScore
-                                  )}
-                                </div>
-                                {content.violations && content.violations.length > 0 && (
-                                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded">
-                                    <p className="text-sm font-semibold text-yellow-900 mb-2">
-                                      Compliance Warnings:
-                                    </p>
-                                    <ul className="list-disc list-inside space-y-1">
-                                      {content.violations.map((violation, idx) => (
-                                        <li key={idx} className="text-sm text-yellow-800">
-                                          {violation}
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
+                              <div className="mt-2 p-2 bg-gray-50 rounded">
+                                {getComplianceBadge(
+                                  content.complianceStatus,
+                                  content.complianceScore
                                 )}
                               </div>
                             </div>
+
+                            {/* XAI Tabs */}
+                            <Tabs defaultValue="content" className="w-full">
+                              <TabsList className="grid w-full grid-cols-2">
+                                <TabsTrigger value="content" className="flex items-center gap-2">
+                                  <Brain className="w-4 h-4" />
+                                  Content Analysis
+                                </TabsTrigger>
+                                <TabsTrigger value="compliance" className="flex items-center gap-2">
+                                  <Shield className="w-4 h-4" />
+                                  Compliance Check
+                                </TabsTrigger>
+                              </TabsList>
+                              <TabsContent value="content" className="mt-4">
+                                <XaiReasoningPanel xai={content.xai} />
+                              </TabsContent>
+                              <TabsContent value="compliance" className="mt-4">
+                                <ComplianceXaiPanel complianceXai={content.compliance_xai} />
+                              </TabsContent>
+                            </Tabs>
                           </div>
                         </DialogContent>
                       </Dialog>

@@ -73,6 +73,38 @@ export interface ExecutionResultsResponse {
   output: Record<string, unknown>;
 }
 
+// XAI (Explainable AI) Types
+export interface XaiFeatureContribution {
+  feature: string;
+  weight: number;
+  impact: string;
+}
+
+export interface XaiMetadata {
+  reasoningTrace?: string[];
+  decisionFactors?: string[];
+  confidence?: number; // 0-1
+  featureContributions?: XaiFeatureContribution[];
+}
+
+export interface ComplianceRuleHit {
+  rule: string;
+  severity: 'critical' | 'high' | 'medium' | 'low';
+  reason: string;
+  evidence: string;
+}
+
+export interface ComplianceEvidence {
+  sourceId?: string;
+  text: string;
+}
+
+export interface ComplianceXaiMetadata extends XaiMetadata {
+  ruleHits?: ComplianceRuleHit[];
+  evidence?: ComplianceEvidence[];
+  xaiError?: string;
+}
+
 export interface GeneratedContentRow {
   row: number;
   name: string;
@@ -81,6 +113,8 @@ export interface GeneratedContentRow {
   complianceScore: number;
   complianceStatus: string;
   violations?: string[];
+  xai?: XaiMetadata; // Message generation XAI
+  compliance_xai?: ComplianceXaiMetadata; // Compliance check XAI
 }
 
 export interface PendingApprovalData {
