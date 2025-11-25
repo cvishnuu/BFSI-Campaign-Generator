@@ -34,7 +34,7 @@ async function generateAudioWithGoogleTTS() {
     // Dynamic import to avoid issues if library not installed
     const textToSpeech = await import('@google-cloud/text-to-speech');
     const client = new textToSpeech.TextToSpeechClient({
-      apiKey: process.env.GOOGLE_TTS_API_KEY || 'AQ.Ab8RN6Kkj8lMlrekeUM7au62eux9WWgyU8iYfAc1W6SyzoI5xA',
+      apiKey: process.env.GOOGLE_TTS_API_KEY
     });
 
     // Ensure output directory exists
