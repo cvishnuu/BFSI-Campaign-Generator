@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Shepherd from 'shepherd.js';
+import type { Tour } from 'shepherd.js';
 import 'shepherd.js/dist/css/shepherd.css';
 
 interface DemoTourProps {
@@ -17,7 +18,7 @@ interface DemoTourProps {
 }
 
 export function DemoTour({ onComplete, autoStart = false, onStepChange, onScreenChange }: DemoTourProps) {
-  const tourRef = useRef<Shepherd.Tour | null>(null);
+  const tourRef = useRef<Tour | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const onCompleteRef = useRef(onComplete);
   const onStepChangeRef = useRef(onStepChange);
