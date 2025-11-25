@@ -74,6 +74,35 @@ export const campaignApi = {
       withAuth(token)
     );
   },
+
+  rejectMessage: async (
+    executionId: string,
+    rowId: number,
+    rejectReason: string,
+    token?: string | null
+  ): Promise<{ success: boolean; message: string; updatedRow: any }> => {
+    const response = await axios.post(
+      `/public/executions/${executionId}/messages/${rowId}/reject`,
+      { rejectReason },
+      withAuth(token)
+    );
+    return response.data;
+  },
+
+  updateMessage: async (
+    executionId: string,
+    rowId: number,
+    updatedMessage: string,
+    recheckCompliance: boolean = true,
+    token?: string | null
+  ): Promise<{ success: boolean; message: string; updatedRow: any }> => {
+    const response = await axios.patch(
+      `/public/executions/${executionId}/messages/${rowId}`,
+      { updatedMessage, recheckCompliance },
+      withAuth(token)
+    );
+    return response.data;
+  },
 };
 
 export default axios.create(baseConfig);

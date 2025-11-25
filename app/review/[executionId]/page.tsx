@@ -24,6 +24,8 @@ import {
   Eye,
   Shield,
   Brain,
+  RotateCcw,
+  Pencil,
 } from 'lucide-react';
 import {
   Dialog,
@@ -33,6 +35,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { campaignApi } from '@/lib/api';
 import { XaiReasoningPanel, ComplianceXaiPanel } from '@/components/xai';
 import { XaiMetadata, ComplianceXaiMetadata } from '@/types';
@@ -68,6 +71,17 @@ export default function ReviewApprovalPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [generatedContent, setGeneratedContent] = useState<GeneratedContent[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  // Reject dialog state
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectingRowId, setRejectingRowId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
+
+  // Edit state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingMessage, setEditingMessage] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
 
   // Fetch approval data from API
   useEffect(() => {
@@ -135,6 +149,95 @@ export default function ReviewApprovalPage() {
       const errorMessage = error instanceof Error ? error.message : 'Failed to approve campaign. Please try again.';
       alert(errorMessage);
       setIsApproving(false);
+    }
+  };
+
+  const handleRejectMessage = async () => {
+    if (!rejectingRowId || !rejectReason.trim()) {
+      alert('Please provide a reason for rejection');
+      return;
+    }
+
+    setIsRegenerating(true);
+    try {
+      await campaignApi.rejectMessage(executionId, rejectingRowId, rejectReason);
+
+      // Refetch approval data to get the updated message with proper transformation
+      const approvalData = await campaignApi.getPendingApproval(executionId);
+      const rows = (approvalData.approvalData?.generatedContent || []) as ApprovalRow[];
+
+      const transformedContent: GeneratedContent[] = rows.map((row) => ({
+        row: row.row,
+        name: row.name || 'Unknown',
+        message: row.message || '',
+        complianceScore: row.complianceScore || 0,
+        complianceStatus:
+          row.complianceStatus === 'pass'
+            ? 'pass'
+            : row.complianceStatus === 'fail'
+              ? 'fail'
+              : 'warning',
+        violations: row.violations || [],
+        xai: row.xai,
+        compliance_xai: row.compliance_xai,
+      }));
+
+      setGeneratedContent(transformedContent);
+
+      // Close dialog and reset state
+      setRejectDialogOpen(false);
+      setRejectingRowId(null);
+      setRejectReason('');
+      alert('Message regenerated successfully!');
+    } catch (error) {
+      console.error('Error regenerating message:', error);
+      alert(error instanceof Error ? error.message : 'Failed to regenerate message. Please try again.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const handleSaveEdit = async (rowId: number) => {
+    if (!editingMessage.trim()) {
+      alert('Message cannot be empty');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      await campaignApi.updateMessage(executionId, rowId, editingMessage, true);
+
+      // Refetch approval data to get the updated message with proper transformation
+      const approvalData = await campaignApi.getPendingApproval(executionId);
+      const rows = (approvalData.approvalData?.generatedContent || []) as ApprovalRow[];
+
+      const transformedContent: GeneratedContent[] = rows.map((row) => ({
+        row: row.row,
+        name: row.name || 'Unknown',
+        message: row.message || '',
+        complianceScore: row.complianceScore || 0,
+        complianceStatus:
+          row.complianceStatus === 'pass'
+            ? 'pass'
+            : row.complianceStatus === 'fail'
+              ? 'fail'
+              : 'warning',
+        violations: row.violations || [],
+        xai: row.xai,
+        compliance_xai: row.compliance_xai,
+      }));
+
+      setGeneratedContent(transformedContent);
+
+      // Exit edit mode
+      setIsEditing(false);
+      setEditingMessage('');
+      alert('Message updated successfully!');
+    } catch (error) {
+      console.error('Error updating message:', error);
+      alert(error instanceof Error ? error.message : 'Failed to update message. Please try again.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -288,7 +391,7 @@ export default function ReviewApprovalPage() {
                   <TableHead>Customer</TableHead>
                   <TableHead>Message</TableHead>
                   <TableHead>Compliance</TableHead>
-                  <TableHead className="w-[100px]">Actions</TableHead>
+                  <TableHead className="w-[180px]">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -303,69 +406,140 @@ export default function ReviewApprovalPage() {
                       {getComplianceBadge(content.complianceStatus, content.complianceScore)}
                     </TableCell>
                     <TableCell>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                          >
-                            <Eye className="w-4 h-4 mr-1" />
-                            View
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle>Message Details - Row {content.row}</DialogTitle>
-                            <DialogDescription>
-                              Review the complete message, compliance details, and AI explainability
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm font-semibold">Customer</Label>
-                              <p className="text-sm mt-1 text-gray-900">{content.name}</p>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-semibold">Generated Message</Label>
-                              <p className="text-sm mt-1 p-3 bg-gray-50 rounded border text-gray-900">
-                                {content.message}
-                              </p>
-                            </div>
-                            <div>
-                              <Label className="text-sm font-semibold flex items-center gap-2">
-                                <Shield className="w-4 h-4" />
-                                Compliance Score
-                              </Label>
-                              <div className="mt-2 p-2 bg-gray-50 rounded">
-                                {getComplianceBadge(
-                                  content.complianceStatus,
-                                  content.complianceScore
+                      <div className="flex gap-2">
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingMessage(content.message);
+                                setIsEditing(false);
+                              }}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              View
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                            <DialogHeader>
+                              <DialogTitle>Message Details - Row {content.row}</DialogTitle>
+                              <DialogDescription>
+                                Review, edit the message, and view AI explainability
+                              </DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-4">
+                              <div>
+                                <Label className="text-sm font-semibold">Customer</Label>
+                                <p className="text-sm mt-1 text-gray-900">{content.name}</p>
+                              </div>
+                              <div>
+                                <div className="flex items-center justify-between mb-2">
+                                  <Label className="text-sm font-semibold">Generated Message</Label>
+                                  {!isEditing ? (
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setIsEditing(true);
+                                        setEditingMessage(content.message);
+                                      }}
+                                    >
+                                      <Pencil className="w-4 h-4 mr-1" />
+                                      Edit
+                                    </Button>
+                                  ) : (
+                                    <div className="flex gap-2">
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          setIsEditing(false);
+                                          setEditingMessage(content.message);
+                                        }}
+                                        disabled={isSaving}
+                                      >
+                                        Cancel
+                                      </Button>
+                                      <Button
+                                        variant="default"
+                                        size="sm"
+                                        onClick={() => handleSaveEdit(content.row)}
+                                        disabled={isSaving}
+                                      >
+                                        {isSaving ? (
+                                          <>
+                                            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                                            Saving...
+                                          </>
+                                        ) : (
+                                          'Save'
+                                        )}
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                                {!isEditing ? (
+                                  <p className="text-sm mt-1 p-3 bg-gray-50 rounded border text-gray-900">
+                                    {content.message}
+                                  </p>
+                                ) : (
+                                  <Textarea
+                                    value={editingMessage}
+                                    onChange={(e) => setEditingMessage(e.target.value)}
+                                    rows={6}
+                                    className="text-sm"
+                                  />
                                 )}
                               </div>
-                            </div>
-
-                            {/* XAI Tabs */}
-                            <Tabs defaultValue="content" className="w-full">
-                              <TabsList className="grid w-full grid-cols-2">
-                                <TabsTrigger value="content" className="flex items-center gap-2">
-                                  <Brain className="w-4 h-4" />
-                                  Content Analysis
-                                </TabsTrigger>
-                                <TabsTrigger value="compliance" className="flex items-center gap-2">
+                              <div>
+                                <Label className="text-sm font-semibold flex items-center gap-2">
                                   <Shield className="w-4 h-4" />
-                                  Compliance Check
-                                </TabsTrigger>
-                              </TabsList>
-                              <TabsContent value="content" className="mt-4">
-                                <XaiReasoningPanel xai={content.xai} />
-                              </TabsContent>
-                              <TabsContent value="compliance" className="mt-4">
-                                <ComplianceXaiPanel complianceXai={content.compliance_xai} />
-                              </TabsContent>
-                            </Tabs>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                                  Compliance Score
+                                </Label>
+                                <div className="mt-2 p-2 bg-gray-50 rounded">
+                                  {getComplianceBadge(
+                                    content.complianceStatus,
+                                    content.complianceScore
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* XAI Tabs */}
+                              <Tabs defaultValue="content" className="w-full">
+                                <TabsList className="grid w-full grid-cols-2">
+                                  <TabsTrigger value="content" className="flex items-center gap-2">
+                                    <Brain className="w-4 h-4" />
+                                    Content Analysis
+                                  </TabsTrigger>
+                                  <TabsTrigger value="compliance" className="flex items-center gap-2">
+                                    <Shield className="w-4 h-4" />
+                                    Compliance Check
+                                  </TabsTrigger>
+                                </TabsList>
+                                <TabsContent value="content" className="mt-4">
+                                  <XaiReasoningPanel xai={content.xai} />
+                                </TabsContent>
+                                <TabsContent value="compliance" className="mt-4">
+                                  <ComplianceXaiPanel complianceXai={content.compliance_xai} />
+                                </TabsContent>
+                              </Tabs>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setRejectingRowId(content.row);
+                            setRejectReason('');
+                            setRejectDialogOpen(true);
+                          }}
+                        >
+                          <RotateCcw className="w-4 h-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -400,6 +574,59 @@ export default function ReviewApprovalPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Reject Message Dialog */}
+        <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Reject & Regenerate Message</DialogTitle>
+              <DialogDescription>
+                Provide a reason for rejection. The AI will use this feedback to generate an improved message.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-semibold mb-2 block">Rejection Reason</Label>
+                <Textarea
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value)}
+                  placeholder="e.g., Message is too generic, doesn't mention the customer's occupation..."
+                  rows={4}
+                  className="text-sm"
+                />
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setRejectDialogOpen(false);
+                    setRejectingRowId(null);
+                    setRejectReason('');
+                  }}
+                  disabled={isRegenerating}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleRejectMessage}
+                  disabled={isRegenerating || !rejectReason.trim()}
+                >
+                  {isRegenerating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Regenerating...
+                    </>
+                  ) : (
+                    <>
+                      <RotateCcw className="w-4 h-4 mr-2" />
+                      Regenerate
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

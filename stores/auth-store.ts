@@ -23,9 +23,9 @@ interface AuthStore {
 // Plan limits
 export const PLAN_LIMITS = {
   free: {
-    campaignsLimit: 3,
-    rowsLimit: 30, // 3 campaigns × 10 rows each
-    features: ['3 campaigns per month', 'Up to 10 rows per campaign', 'Basic templates', 'Email support'],
+    campaignsLimit: 100,
+    rowsLimit: 1000, // 100 campaigns × 10 rows each
+    features: ['100 campaigns per month', 'Up to 10 rows per campaign', 'Basic templates', 'Email support'],
   },
   starter: {
     campaignsLimit: 20,
