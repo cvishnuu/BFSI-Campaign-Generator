@@ -87,6 +87,14 @@ export default function CreateCampaignPage() {
     };
 
     fetchUsage();
+
+    // Refetch usage when window gains focus (e.g., returning from review page)
+    const handleFocus = () => {
+      fetchUsage();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [isLoaded, isSignedIn, clerkUser, getToken]);
 
   if (!isLoaded || !isSignedIn) {
