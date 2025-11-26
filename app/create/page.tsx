@@ -188,7 +188,7 @@ export default function CreateCampaignPage() {
                   </CardDescription>
                 </div>
                 <a href="/templates/sample-customers.csv" download="sample-customers.csv">
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" className="flex items-center gap-2">
                     <Download className="w-4 h-4" />
                     Download Sample
                   </Button>
