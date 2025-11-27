@@ -140,7 +140,23 @@ export default function CreateCampaignPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await campaignApi.startCampaign(formData);
+      // Get Clerk auth token
+      const token = await getToken();
+      if (!token) {
+        alert('Authentication error. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Call BFF API which tracks usage and forwards to workflow backend
+      const response = await bffApi.startCampaign(
+        {
+          csvData: formData.rows,
+          prompt: formData.prompt,
+          tone: formData.tone,
+        },
+        token
+      );
 
       router.push(`/execution/${response.executionId}`);
     } catch (error) {

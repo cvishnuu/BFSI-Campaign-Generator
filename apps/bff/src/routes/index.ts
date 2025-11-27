@@ -2,8 +2,14 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { getAuth, requireAuth } from '@clerk/express';
 import { getUsage, incrementUsage, upsertUser } from '../services/user-service.js';
+import axios from 'axios';
 
 const router = Router();
+
+// Workflow backend configuration
+const WORKFLOW_API_URL = process.env.WORKFLOW_API_URL || 'http://localhost:3001/api/v1';
+const WORKFLOW_API_KEY = process.env.WORKFLOW_API_KEY || 'wf_nN1aPZUxLCdmyMFTYa04MUhq4XdOpgEh3WqXQVQa3lw';
+const WORKFLOW_ID = 'workflow_bfsi_marketing_template';
 
 const getUserContext = (req: Parameters<typeof getAuth>[0]) => {
   const auth = getAuth(req);
@@ -88,25 +94,37 @@ router.post('/campaigns/execute', async (req, res, next) => {
 
     // Enforce 100 campaign limit (free tier)
     const MAX_CAMPAIGNS = 100;
-    if (usage.campaigns_generated >= MAX_CAMPAIGNS) {
+    if (usage.campaignsGenerated >= MAX_CAMPAIGNS) {
       return res.status(403).json({
         error: 'Campaign limit reached',
         message: `You have reached your free tier limit of ${MAX_CAMPAIGNS} campaigns. Please upgrade your plan to continue.`,
         limit: MAX_CAMPAIGNS,
-        current: usage.campaigns_generated,
+        current: usage.campaignsGenerated,
       });
     }
 
-    const executionId = `exec_${Date.now()}`;
-
-    // Track usage; rowsProcessed based on csv rows
+    // Track usage BEFORE calling workflow (so it's tracked even if workflow fails)
     await incrementUsage(userContext.userId, 1, parsed.data.csvData.length);
 
-    res.status(201).json({
-      executionId,
-      status: 'running',
-      message: 'Campaign started',
-    });
+    // Forward request to workflow backend
+    const workflowResponse = await axios.post(
+      `${WORKFLOW_API_URL}/public/agents/${WORKFLOW_ID}/execute`,
+      {
+        csvData: parsed.data.csvData,
+        executionInput: {
+          prompt: parsed.data.prompt,
+          tone: parsed.data.tone,
+        },
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${WORKFLOW_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    res.status(201).json(workflowResponse.data);
   } catch (err) {
     next(err);
   }
