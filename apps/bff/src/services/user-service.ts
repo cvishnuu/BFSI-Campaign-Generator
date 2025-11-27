@@ -70,11 +70,11 @@ export async function getUsage(userId: string): Promise<UsageRecord> {
 
 export async function incrementUsage(userId: string, campaigns: number, rows: number) {
   await pool.query(
-    `UPDATE usage_stats
-     SET campaigns_generated = campaigns_generated + $2,
-         rows_processed = rows_processed + $3,
-         updated_at = now()
-     WHERE user_id = $1`,
+    `INSERT INTO usage_stats (user_id, campaigns_generated, rows_processed)
+     VALUES ($1, $2, $3)
+     ON CONFLICT (user_id) DO UPDATE
+     SET campaigns_generated = usage_stats.campaigns_generated + $2,
+         rows_processed = usage_stats.rows_processed + $3`,
     [userId, campaigns, rows]
   );
 }

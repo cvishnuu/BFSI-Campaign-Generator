@@ -65,6 +65,50 @@ export function ComplianceXaiPanel({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Score Breakdown */}
+        {complianceXai.scoreBreakdown && (
+          <div>
+            <h4 className="font-semibold mb-3 text-sm text-gray-700">Score Calculation</h4>
+            <Card className="border-blue-200 bg-blue-50">
+              <CardContent className="pt-4">
+                {complianceXai.scoreBreakdown.calculation && (
+                  <p className="text-sm font-mono text-blue-900 mb-3">
+                    {complianceXai.scoreBreakdown.calculation}
+                  </p>
+                )}
+                {complianceXai.scoreBreakdown.violationsBySeverity && (
+                  <div className="grid grid-cols-4 gap-2 text-sm">
+                    <div className="text-center">
+                      <span className="block font-semibold text-2xl text-red-700">
+                        {complianceXai.scoreBreakdown.violationsBySeverity.critical}
+                      </span>
+                      <span className="text-xs text-gray-600">Critical</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block font-semibold text-2xl text-orange-700">
+                        {complianceXai.scoreBreakdown.violationsBySeverity.high}
+                      </span>
+                      <span className="text-xs text-gray-600">High</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block font-semibold text-2xl text-yellow-700">
+                        {complianceXai.scoreBreakdown.violationsBySeverity.medium}
+                      </span>
+                      <span className="text-xs text-gray-600">Medium</span>
+                    </div>
+                    <div className="text-center">
+                      <span className="block font-semibold text-2xl text-blue-700">
+                        {complianceXai.scoreBreakdown.violationsBySeverity.low}
+                      </span>
+                      <span className="text-xs text-gray-600">Low</span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Confidence Score */}
         {complianceXai.confidence !== undefined && (
           <div>
@@ -110,7 +154,8 @@ export function ComplianceXaiPanel({
         )}
 
         {/* Empty state if no data */}
-        {!complianceXai.confidence &&
+        {!complianceXai.scoreBreakdown &&
+         !complianceXai.confidence &&
          (!complianceXai.decisionFactors || complianceXai.decisionFactors.length === 0) &&
          (!complianceXai.reasoningTrace || complianceXai.reasoningTrace.length === 0) &&
          (!complianceXai.ruleHits || complianceXai.ruleHits.length === 0) &&
