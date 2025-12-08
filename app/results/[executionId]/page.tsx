@@ -299,7 +299,7 @@ export default function ResultsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#FA7315] mx-auto mb-4" />
           <p className="text-lg text-gray-900 mb-2">{loadingMessage}</p>
           <p className="text-sm text-gray-600">This may take a few moments...</p>
         </div>
@@ -387,13 +387,13 @@ export default function ResultsPage() {
         </div>
 
         {/* Download Section */}
-        <Card className="mb-8 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+        <Card className="mb-8 border-orange-200 bg-gradient-to-r from-[#FA7315] to-orange-400">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-white">
               <Download className="w-5 h-5" />
               Download Campaign Results
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-white">
               Export your campaign data in CSV or Excel format
             </CardDescription>
           </CardHeader>

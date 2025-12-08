@@ -4,10 +4,10 @@ const BFF_URL = process.env.NEXT_PUBLIC_BFF_URL || 'http://localhost:4000';
 
 interface UsageResponse {
   usage: {
-    campaigns_generated: number;
-    rows_processed: number;
-    period_start: string;
-    period_end: string;
+    campaignsGenerated: number;
+    rowsProcessed: number;
+    periodStart: string;
+    periodEnd: string;
   };
 }
 
@@ -56,7 +56,39 @@ export const bffApi = {
   },
 
   /**
-   * Start a campaign execution
+   * Validate campaign and track usage (NEW FLOW)
+   * Call this BEFORE calling workflow API
+   * @param data - Campaign data (CSV rows, prompt, tone)
+   * @param token - Clerk auth token
+   * @returns Success status and validation result
+   */
+  validateAndTrackCampaign: async (
+    data: {
+      csvData: any[];
+      prompt: string;
+      tone: string;
+    },
+    token: string
+  ): Promise<{
+    success: boolean;
+    message: string;
+    rowCount: number;
+  }> => {
+    const response = await axios.post(
+      `${BFF_URL}/api/v1/campaigns/validate-and-track`,
+      data,
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * Start a campaign execution (DEPRECATED - use validateAndTrackCampaign + campaignApi.startCampaign)
    * @param data - Campaign data (CSV rows, prompt, tone)
    * @param token - Clerk auth token
    */

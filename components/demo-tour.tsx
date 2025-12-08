@@ -551,15 +551,15 @@ export function DemoTour({ onComplete, autoStart = false, onStepChange, onScreen
             <p className="demo-description text-gray-700 my-4">
               Let me show you how to create compliant marketing campaigns in minutes using AI.
             </p>
-            <div className="demo-info-box bg-blue-50 p-4 rounded-lg flex items-start gap-3 mb-6">
-              <svg className="info-icon w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+            <div className="demo-info-box bg-orange-50 p-4 rounded-lg flex items-start gap-3 mb-6">
+              <svg className="info-icon w-5 h-5 text-[#FA7315] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 9a1 1 0 012 0v4a1 1 0 11-2 0V9zm1-5a1 1 0 100 2 1 1 0 000-2z"/>
               </svg>
               <span className="text-sm text-gray-700">This 1-minute demo runs automatically with voiceover. Click Start to begin!</span>
             </div>
             <button
               onClick={handleStartDemo}
-              className="shepherd-button-primary w-full py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+              className="shepherd-button-primary w-full py-3 px-6 bg-[#FA7315] hover:bg-orange-700 text-white font-semibold rounded-lg transition-colors"
             >
               ▶ Start Demo
             </button>

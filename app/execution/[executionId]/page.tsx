@@ -160,7 +160,7 @@ export default function ExecutionTrackerPage() {
     switch (status) {
       case 'running':
         return (
-          <Badge className="bg-blue-100 text-blue-800">
+          <Badge className="bg-orange-100 text-orange-800">
             <Loader2 className="w-3 h-3 mr-1 animate-spin" />
             Running
           </Badge>
@@ -269,7 +269,7 @@ export default function ExecutionTrackerPage() {
                       key={step.id}
                       className={`flex items-start gap-4 p-4 rounded-lg border transition-all ${
                         stepStatus === 'running'
-                          ? 'border-blue-300 bg-blue-50'
+                          ? 'border-orange-300 bg-orange-50'
                           : stepStatus === 'completed'
                           ? 'border-green-300 bg-green-50'
                           : 'border-gray-200 bg-gray-50'
@@ -278,7 +278,7 @@ export default function ExecutionTrackerPage() {
                       <div
                         className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
                           stepStatus === 'running'
-                            ? 'bg-blue-600'
+                            ? 'bg-[#FA7315]'
                             : stepStatus === 'completed'
                             ? 'bg-green-600'
                             : 'bg-gray-400'

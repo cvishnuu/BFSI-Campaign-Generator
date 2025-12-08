@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth, useUser } from '@clerk/nextjs';
 import { campaignApi } from '@/lib/api';
+import { bffApi } from '@/lib/bff-api';
 import { UsageStats, User } from '@/types';
 import { PLAN_LIMITS } from '@/stores/auth-store';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Logo } from '@/components/logo';
 import {
   Sparkles,
   TrendingUp,
@@ -38,6 +40,36 @@ export default function Dashboard() {
       }
 
       try {
+        // Get Clerk session token
+        const token = await getToken();
+        if (!token) {
+          console.error('No auth token available');
+          return;
+        }
+
+        // Fetch real usage from BFF
+        const { usage } = await bffApi.getUsage(token);
+
+        setAppUser({
+          id: clerkUser.id,
+          email: clerkUser.primaryEmailAddress?.emailAddress || '',
+          name: clerkUser.fullName || '',
+          plan: 'free',
+          createdAt: new Date().toISOString(),
+        });
+
+        setUsageStats({
+          userId: clerkUser.id,
+          campaignsGenerated: usage.campaignsGenerated,
+          campaignsLimit: PLAN_LIMITS.free.campaignsLimit,
+          rowsProcessed: usage.rowsProcessed,
+          rowsLimit: PLAN_LIMITS.free.rowsLimit,
+          periodStart: usage.periodStart,
+          periodEnd: usage.periodEnd,
+        });
+      } catch (error) {
+        console.error('Failed to load dashboard data', error);
+        // Fallback to default values if fetch fails
         setAppUser({
           id: clerkUser.id,
           email: clerkUser.primaryEmailAddress?.emailAddress || '',
@@ -54,17 +86,23 @@ export default function Dashboard() {
           periodStart: new Date().toISOString(),
           periodEnd: new Date().toISOString(),
         });
-      } catch (error) {
-        console.error('Failed to load dashboard data', error);
       }
     };
 
     loadProfile();
+
+    // Refetch usage when window gains focus (e.g., returning from review page)
+    const handleFocus = () => {
+      loadProfile();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [isLoaded, isSignedIn, getToken, router, clerkUser]);
 
   if (!isLoaded || !isSignedIn || !appUser || !usageStats) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-gray-900">Loading...</div>
       </div>
     );
@@ -92,12 +130,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2">
-            <Sparkles className="w-6 h-6 text-blue-600" />
+          <Link href="/" className="flex items-center gap-3">
+            <Logo />
             <span className="text-xl font-bold text-gray-900">BFSI Campaign Generator</span>
           </Link>
           <nav className="flex items-center gap-4">
@@ -105,7 +143,7 @@ export default function Dashboard() {
               <Button variant="ghost" className="text-gray-900 font-semibold">Dashboard</Button>
             </Link>
             <Link href="/create">
-              <Button variant="default" className="bg-blue-600 text-white font-semibold">
+              <Button variant="default" className="bg-[#FA7315] text-white font-semibold">
                 Create Campaign
               </Button>
             </Link>
@@ -158,7 +196,7 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-gray-900">Current Plan</CardTitle>
-                <Crown className="w-5 h-5 text-blue-600" />
+                <Crown className="w-5 h-5 text-[#FA7315]" />
               </div>
             </CardHeader>
             <CardContent>
@@ -186,7 +224,7 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-gray-900">Campaigns</CardTitle>
-                <FileText className="w-5 h-5 text-blue-600" />
+                <FileText className="w-5 h-5 text-[#FA7315]" />
               </div>
               <CardDescription>This billing period</CardDescription>
             </CardHeader>
@@ -217,7 +255,7 @@ export default function Dashboard() {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg text-gray-900">Rows Processed</CardTitle>
-                <TrendingUp className="w-5 h-5 text-blue-600" />
+                <TrendingUp className="w-5 h-5 text-[#FA7315]" />
               </div>
               <CardDescription>This billing period</CardDescription>
             </CardHeader>
@@ -248,11 +286,11 @@ export default function Dashboard() {
           <CardContent>
             <div className="grid md:grid-cols-2 gap-4">
               <Link href="/create" className="block">
-                <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-blue-200">
+                <Card className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-orange-200">
                   <CardContent className="p-6">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <Sparkles className="w-6 h-6 text-blue-600" />
+                      <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                        <Sparkles className="w-6 h-6 text-[#FA7315]" />
                       </div>
                       <div>
                         <h3 className="font-semibold text-lg mb-1 text-gray-900">Create New Campaign</h3>

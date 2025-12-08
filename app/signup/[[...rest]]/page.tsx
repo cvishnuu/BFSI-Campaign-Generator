@@ -2,16 +2,16 @@
 
 import { SignUp } from '@clerk/nextjs';
 import Link from 'next/link';
-import { Zap } from 'lucide-react';
+import { Logo } from '@/components/logo';
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
-          <Link href="/" className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-blue-600" />
+          <Link href="/" className="flex items-center gap-3">
+            <Logo />
             <span className="text-xl font-bold text-gray-900">BFSI Campaign Generator</span>
           </Link>
         </div>

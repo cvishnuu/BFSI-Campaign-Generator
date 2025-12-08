@@ -29,7 +29,7 @@ export function DecisionFactorsBadges({ factors, title = 'Key Decision Factors' 
           <Badge
             key={index}
             variant="secondary"
-            className="bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+            className="bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100"
           >
             {factor}
           </Badge>

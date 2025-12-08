@@ -71,12 +71,12 @@ export default function CreateCampaignPage() {
 
         setUsageStats({
           userId: clerkUser.id,
-          campaignsGenerated: usage.campaigns_generated,
+          campaignsGenerated: usage.campaignsGenerated,
           campaignsLimit: 100, // Free tier limit
-          rowsProcessed: usage.rows_processed,
+          rowsProcessed: usage.rowsProcessed,
           rowsLimit: 1000, // 10 rows * 100 campaigns
-          periodStart: usage.period_start,
-          periodEnd: usage.period_end,
+          periodStart: usage.periodStart,
+          periodEnd: usage.periodEnd,
         });
       } catch (error) {
         console.error('Failed to fetch usage stats:', error);
@@ -148,8 +148,9 @@ export default function CreateCampaignPage() {
         return;
       }
 
-      // Call BFF API which tracks usage and forwards to workflow backend
-      const response = await bffApi.startCampaign(
+      // STEP 1: Validate and track usage via BFF
+      // This increments the campaign count in the database
+      await bffApi.validateAndTrackCampaign(
         {
           csvData: formData.rows,
           prompt: formData.prompt,
@@ -158,7 +159,17 @@ export default function CreateCampaignPage() {
         token
       );
 
-      router.push(`/execution/${response.executionId}`);
+      // STEP 2: If validation passed, call workflow backend directly
+      // Frontend now calls workflow API with the workflow API key
+      const workflowResponse = await campaignApi.startCampaign({
+        rows: formData.rows,
+        prompt: formData.prompt,
+        tone: formData.tone,
+        csv: formData.csv,
+        csvPreview: formData.csvPreview,
+      });
+
+      router.push(`/execution/${workflowResponse.executionId}`);
     } catch (error) {
       console.error('Error starting campaign:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to start campaign. Please try again.';
@@ -245,8 +256,8 @@ export default function CreateCampaignPage() {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="flex items-center gap-2 text-gray-900">
-                    <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                      <span className="text-blue-600 font-bold">1</span>
+                    <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                      <span className="text-[#FA7315] font-bold">1</span>
                     </div>
                     Upload Customer Data
                   </CardTitle>
@@ -286,8 +297,8 @@ export default function CreateCampaignPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-gray-900">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                  <span className="text-blue-600 font-bold">2</span>
+                <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                  <span className="text-[#FA7315] font-bold">2</span>
                 </div>
                 Configure Campaign
               </CardTitle>
@@ -338,12 +349,12 @@ export default function CreateCampaignPage() {
           </Card>
 
           {/* Submit Button */}
-          <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+          <Card className="border-orange-200 bg-gradient-to-r from-[#FA7315] to-orange-400">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-semibold text-lg mb-1 text-gray-900">Ready to Generate?</h3>
-                  <p className="text-sm text-gray-700">
+                  <h3 className="font-semibold text-lg mb-1 text-white">Ready to Generate?</h3>
+                  <p className="text-sm text-white">
                     Review your settings and start the campaign generation
                   </p>
                 </div>
@@ -382,12 +393,12 @@ export default function CreateCampaignPage() {
             <DialogDescription className="text-gray-700">{limitMessage}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Card className="border-blue-200 bg-blue-50">
+            <Card className="border-orange-200 bg-orange-50">
               <CardContent className="p-4">
-                <p className="text-sm text-blue-900 mb-3">
+                <p className="text-sm text-orange-900 mb-3">
                   Upgrade your plan to continue creating campaigns with more capacity.
                 </p>
-                <div className="space-y-2 text-sm text-blue-800">
+                <div className="space-y-2 text-sm text-orange-800">
                   <p>Current usage:</p>
                   <ul className="list-disc list-inside ml-2 space-y-1">
                     <li>
@@ -406,7 +417,7 @@ export default function CreateCampaignPage() {
               Cancel
             </Button>
             <Link href="/pricing">
-              <Button className="bg-blue-600 text-white">
+              <Button className="bg-[#FA7315] text-white hover:bg-orange-700">
                 <Crown className="w-4 h-4 mr-2" />
                 View Plans
               </Button>

@@ -68,39 +68,69 @@ export function ComplianceXaiPanel({
         {/* Score Breakdown */}
         {complianceXai.scoreBreakdown && (
           <div>
-            <h4 className="font-semibold mb-3 text-sm text-gray-700">Score Calculation</h4>
-            <Card className="border-blue-200 bg-blue-50">
-              <CardContent className="pt-4">
-                {complianceXai.scoreBreakdown.calculation && (
-                  <p className="text-sm font-mono text-blue-900 mb-3">
-                    {complianceXai.scoreBreakdown.calculation}
+            <h4 className="font-semibold mb-3 text-sm text-gray-700 flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              Compliance Score Calculation
+            </h4>
+            <Card className="border-orange-200 bg-orange-50">
+              <CardContent className="pt-4 space-y-4">
+                {/* Formula Explanation */}
+                <div className="bg-white/70 p-3 rounded border border-orange-300">
+                  <p className="text-xs font-semibold text-gray-700 mb-2">Scoring Formula:</p>
+                  <p className="text-sm font-mono text-gray-900 mb-1">
+                    Compliance % = 100 - Risk Score
                   </p>
-                )}
+                  <p className="text-xs text-gray-600 mb-2">
+                    Risk Score = (CRITICAL × 40) + (HIGH × 25) + (MEDIUM × 15) + (LOW × 5)
+                  </p>
+                  {complianceXai.scoreBreakdown.calculation && (
+                    <p className="text-sm font-mono text-gray-900 font-bold mt-2 pt-2 border-t border-orange-300">
+                      {complianceXai.scoreBreakdown.calculation}
+                    </p>
+                  )}
+                </div>
+
+                {/* Violations by Severity */}
                 {complianceXai.scoreBreakdown.violationsBySeverity && (
-                  <div className="grid grid-cols-4 gap-2 text-sm">
-                    <div className="text-center">
-                      <span className="block font-semibold text-2xl text-red-700">
-                        {complianceXai.scoreBreakdown.violationsBySeverity.critical}
-                      </span>
-                      <span className="text-xs text-gray-600">Critical</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="block font-semibold text-2xl text-orange-700">
-                        {complianceXai.scoreBreakdown.violationsBySeverity.high}
-                      </span>
-                      <span className="text-xs text-gray-600">High</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="block font-semibold text-2xl text-yellow-700">
-                        {complianceXai.scoreBreakdown.violationsBySeverity.medium}
-                      </span>
-                      <span className="text-xs text-gray-600">Medium</span>
-                    </div>
-                    <div className="text-center">
-                      <span className="block font-semibold text-2xl text-blue-700">
-                        {complianceXai.scoreBreakdown.violationsBySeverity.low}
-                      </span>
-                      <span className="text-xs text-gray-600">Low</span>
+                  <div>
+                    <p className="text-xs font-semibold text-gray-700 mb-2">Violations Breakdown:</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      <div className="text-center bg-white/70 p-2 rounded border border-red-200">
+                        <span className="block font-semibold text-2xl text-red-700">
+                          {complianceXai.scoreBreakdown.violationsBySeverity.critical}
+                        </span>
+                        <span className="text-xs text-gray-600 block">Critical</span>
+                        <span className="text-xs text-red-600 font-medium block mt-1">
+                          -{complianceXai.scoreBreakdown.violationsBySeverity.critical * 40} pts
+                        </span>
+                      </div>
+                      <div className="text-center bg-white/70 p-2 rounded border border-orange-200">
+                        <span className="block font-semibold text-2xl text-orange-700">
+                          {complianceXai.scoreBreakdown.violationsBySeverity.high}
+                        </span>
+                        <span className="text-xs text-gray-600 block">High</span>
+                        <span className="text-xs text-orange-600 font-medium block mt-1">
+                          -{complianceXai.scoreBreakdown.violationsBySeverity.high * 25} pts
+                        </span>
+                      </div>
+                      <div className="text-center bg-white/70 p-2 rounded border border-yellow-200">
+                        <span className="block font-semibold text-2xl text-yellow-700">
+                          {complianceXai.scoreBreakdown.violationsBySeverity.medium}
+                        </span>
+                        <span className="text-xs text-gray-600 block">Medium</span>
+                        <span className="text-xs text-yellow-600 font-medium block mt-1">
+                          -{complianceXai.scoreBreakdown.violationsBySeverity.medium * 15} pts
+                        </span>
+                      </div>
+                      <div className="text-center bg-white/70 p-2 rounded border border-orange-200">
+                        <span className="block font-semibold text-2xl text-orange-700">
+                          {complianceXai.scoreBreakdown.violationsBySeverity.low}
+                        </span>
+                        <span className="text-xs text-gray-600 block">Low</span>
+                        <span className="text-xs text-[#FA7315] font-medium block mt-1">
+                          -{complianceXai.scoreBreakdown.violationsBySeverity.low * 5} pts
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )}

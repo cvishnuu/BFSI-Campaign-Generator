@@ -15,7 +15,7 @@ export default function PricingRedirect() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center">
       <div className="text-center">
-        <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+        <Loader2 className="w-12 h-12 animate-spin text-[#FA7315] mx-auto mb-4" />
         <p className="text-lg text-gray-900">Redirecting to Contact page...</p>
       </div>
     </div>

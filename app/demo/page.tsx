@@ -204,7 +204,7 @@ export default function DemoPage() {
         <Card className="max-w-md" data-demo-step="4">
           <CardContent className="pt-6">
             <div className="text-center">
-              <Loader2 className="w-16 h-16 animate-spin text-blue-600 mx-auto mb-4" />
+              <Loader2 className="w-16 h-16 animate-spin text-[#FA7315] mx-auto mb-4" />
               <h3 className="text-xl font-bold mb-2 text-gray-900">Generating Campaign...</h3>
               <p className="text-sm text-gray-700 mb-4">
                 AI is creating personalized messages and checking compliance
@@ -304,7 +304,7 @@ export default function DemoPage() {
                     <TableRow
                       key={msg.row}
                       data-demo-step={index === 0 ? "5" : undefined}
-                      className={index === 0 ? "bg-blue-50 hover:bg-blue-100" : undefined}
+                      className={index === 0 ? "bg-orange-50 hover:bg-orange-100" : undefined}
                     >
                       <TableCell>
                         <div>
@@ -377,7 +377,7 @@ export default function DemoPage() {
                       onChange={(e) => setEditedContent(e.target.value)}
                       disabled={!isEditing}
                       rows={6}
-                      className={isEditing ? 'border-blue-500' : ''}
+                      className={isEditing ? 'border-[#FA7315]' : ''}
                     />
                   </div>
 
@@ -422,11 +422,11 @@ export default function DemoPage() {
           </Dialog>
 
           {/* CTA */}
-          <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50" data-demo-step="download">
+          <Card className="border-orange-200 bg-gradient-to-r from-[#FA7315] to-orange-400" data-demo-step="download">
             <CardContent className="pt-6">
               <div className="text-center">
-                <h3 className="font-semibold text-xl mb-2 text-gray-900">Demo Complete!</h3>
-                <p className="text-sm text-gray-700 mb-4">
+                <h3 className="font-semibold text-xl mb-2 text-white">Demo Complete!</h3>
+                <p className="text-sm text-white mb-4">
                   Ready to create your own compliant campaigns?
                 </p>
                 <Button onClick={handleComplete} size="lg">
@@ -480,8 +480,8 @@ export default function DemoPage() {
         <Card data-demo-step="csv-upload" className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-900">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                <span className="text-blue-600 font-bold">1</span>
+              <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <span className="text-[#FA7315] font-bold">1</span>
               </div>
               Upload Customer Data
             </CardTitle>
@@ -511,8 +511,8 @@ export default function DemoPage() {
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-gray-900">
-              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                <span className="text-blue-600 font-bold">2</span>
+              <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
+                <span className="text-[#FA7315] font-bold">2</span>
               </div>
               Configure Campaign
             </CardTitle>
@@ -556,12 +556,12 @@ export default function DemoPage() {
         </Card>
 
         {/* Submit */}
-        <Card className="border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+        <Card className="border-orange-200 bg-gradient-to-r from-[#FA7315] to-orange-400">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-lg mb-1 text-gray-900">Ready to Generate?</h3>
-                <p className="text-sm text-gray-700">Start the AI campaign generation</p>
+                <h3 className="font-semibold text-lg mb-1 text-white">Ready to Generate?</h3>
+                <p className="text-sm text-white">Start the AI campaign generation</p>
               </div>
               <Button onClick={handleStartDemo} size="lg" className="px-8">
                 <Sparkles className="w-5 h-5 mr-2" />

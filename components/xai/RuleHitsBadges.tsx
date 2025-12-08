@@ -27,6 +27,7 @@ export function RuleHitsBadges({ ruleHits, title = 'Compliance Rule Matches' }: 
           color: 'text-red-600',
           bgColor: 'bg-red-50',
           borderColor: 'border-red-200',
+          points: 40,
         };
       case 'high':
         return {
@@ -35,6 +36,7 @@ export function RuleHitsBadges({ ruleHits, title = 'Compliance Rule Matches' }: 
           color: 'text-orange-600',
           bgColor: 'bg-orange-50',
           borderColor: 'border-orange-200',
+          points: 25,
         };
       case 'medium':
         return {
@@ -43,14 +45,16 @@ export function RuleHitsBadges({ ruleHits, title = 'Compliance Rule Matches' }: 
           color: 'text-yellow-600',
           bgColor: 'bg-yellow-50',
           borderColor: 'border-yellow-200',
+          points: 15,
         };
       case 'low':
         return {
           variant: 'secondary' as const,
           icon: Info,
-          color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
-          borderColor: 'border-blue-200',
+          color: 'text-[#FA7315]',
+          bgColor: 'bg-orange-50',
+          borderColor: 'border-orange-200',
+          points: 5,
         };
       default:
         return {
@@ -59,6 +63,7 @@ export function RuleHitsBadges({ ruleHits, title = 'Compliance Rule Matches' }: 
           color: 'text-gray-600',
           bgColor: 'bg-gray-50',
           borderColor: 'border-gray-200',
+          points: 0,
         };
     }
   };
@@ -67,7 +72,7 @@ export function RuleHitsBadges({ ruleHits, title = 'Compliance Rule Matches' }: 
     <div className="space-y-3">
       {title && (
         <h4 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-blue-600" />
+          <Shield className="w-4 h-4 text-[#FA7315]" />
           {title}
         </h4>
       )}
@@ -81,20 +86,25 @@ export function RuleHitsBadges({ ruleHits, title = 'Compliance Rule Matches' }: 
               key={index}
               className={`p-3 rounded-lg border ${config.bgColor} ${config.borderColor}`}
             >
-              <div className="flex items-start gap-2 mb-2">
+              <div className="flex items-start gap-2">
                 <Icon className={`w-4 h-4 mt-0.5 ${config.color}`} />
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="text-sm font-semibold text-gray-900">
                       {hit.rule}
                     </span>
                     <Badge variant={config.variant} className="text-xs">
                       {hit.severity}
                     </Badge>
+                    {config.points > 0 && (
+                      <span className={`text-xs font-semibold ${config.color}`}>
+                        -{config.points} points
+                      </span>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-700">{hit.reason}</p>
+                  <p className="text-sm text-gray-700 mb-2">{hit.reason}</p>
                   {hit.evidence && (
-                    <div className="mt-2 text-xs text-gray-600 bg-white/50 p-2 rounded border border-gray-200">
+                    <div className="text-xs text-gray-600 bg-white/50 p-2 rounded border border-gray-200">
                       <span className="font-medium">Evidence: </span>
                       <span className="italic">&quot;{hit.evidence}&quot;</span>
                     </div>

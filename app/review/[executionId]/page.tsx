@@ -39,6 +39,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { campaignApi } from '@/lib/api';
 import { XaiReasoningPanel, ComplianceXaiPanel } from '@/components/xai';
 import { XaiMetadata, ComplianceXaiMetadata } from '@/types';
+import { sanitizeInput } from '@/lib/sanitize';
 
 interface GeneratedContent {
   row: number;
@@ -116,6 +117,19 @@ export default function ReviewApprovalPage() {
         setGeneratedContent(transformedContent);
       } catch (err) {
         console.error('Error fetching approval data:', err);
+
+        // Check if it's a 404 error (execution not pending approval anymore)
+        // This happens when user navigates back after already approving
+        if (err && typeof err === 'object' && 'message' in err) {
+          const errorMessage = (err as Error).message;
+          if (errorMessage.includes('404') || errorMessage.includes('not found') || errorMessage.includes('not pending approval')) {
+            // Gracefully redirect to dashboard
+            console.log('Campaign is no longer pending approval, redirecting to dashboard...');
+            router.push('/dashboard');
+            return;
+          }
+        }
+
         setError(err instanceof Error ? err.message : 'Failed to load approval data');
       } finally {
         setIsLoading(false);
@@ -123,7 +137,7 @@ export default function ReviewApprovalPage() {
     };
 
     fetchApprovalData();
-  }, [executionId]);
+  }, [executionId, router]);
 
   const stats = {
     total: generatedContent.length,
@@ -160,7 +174,9 @@ export default function ReviewApprovalPage() {
 
     setIsRegenerating(true);
     try {
-      await campaignApi.rejectMessage(executionId, rejectingRowId, rejectReason);
+      // Sanitize reject reason before sending to API
+      const sanitizedReason = sanitizeInput(rejectReason);
+      await campaignApi.rejectMessage(executionId, rejectingRowId, sanitizedReason);
 
       // Refetch approval data to get the updated message with proper transformation
       const approvalData = await campaignApi.getPendingApproval(executionId);
@@ -205,7 +221,9 @@ export default function ReviewApprovalPage() {
 
     setIsSaving(true);
     try {
-      await campaignApi.updateMessage(executionId, rowId, editingMessage, true);
+      // Sanitize edited message before sending to API
+      const sanitizedMessage = sanitizeInput(editingMessage);
+      await campaignApi.updateMessage(executionId, rowId, sanitizedMessage, true);
 
       // Refetch approval data to get the updated message with proper transformation
       const approvalData = await campaignApi.getPendingApproval(executionId);
@@ -274,7 +292,7 @@ export default function ReviewApprovalPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#FA7315] mx-auto mb-4" />
           <p className="text-lg text-gray-900">Loading approval data...</p>
         </div>
       </div>
@@ -486,7 +504,7 @@ export default function ReviewApprovalPage() {
                                 ) : (
                                   <Textarea
                                     value={editingMessage}
-                                    onChange={(e) => setEditingMessage(e.target.value)}
+                                    onChange={(e) => setEditingMessage(sanitizeInput(e.target.value))}
                                     rows={6}
                                     className="text-sm"
                                   />
@@ -549,12 +567,12 @@ export default function ReviewApprovalPage() {
         </Card>
 
         {/* Action Card */}
-        <Card className="mt-8 border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50">
+        <Card className="mt-8 border-orange-200 bg-gradient-to-r from-[#FA7315] to-orange-400">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-lg mb-1 text-gray-900">Ready to Finalize?</h3>
-                <p className="text-sm text-gray-700">
+                <h3 className="font-semibold text-lg mb-1 text-white">Ready to Finalize?</h3>
+                <p className="text-sm text-white">
                   Approve this campaign to download the results
                 </p>
               </div>
@@ -589,7 +607,7 @@ export default function ReviewApprovalPage() {
                 <Label className="text-sm font-semibold mb-2 block">Rejection Reason</Label>
                 <Textarea
                   value={rejectReason}
-                  onChange={(e) => setRejectReason(e.target.value)}
+                  onChange={(e) => setRejectReason(sanitizeInput(e.target.value))}
                   placeholder="e.g., Message is too generic, doesn't mention the customer's occupation..."
                   rows={4}
                   className="text-sm"

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Mail, Send, CheckCircle2, Zap, MessageSquare, Building2, Clock } from "lucide-react";
+import { sanitizeInput } from "@/lib/sanitize";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -80,14 +81,17 @@ export default function ContactPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    // Sanitize all text inputs to prevent XSS
+    const sanitizedValue = sanitizeInput(value);
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: sanitizedValue,
     });
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4">
@@ -164,7 +168,7 @@ export default function ContactPage() {
                       <label htmlFor="subject" className="block text-sm font-medium text-gray-900 mb-2">
                         Subject <span className="text-red-500">*</span>
                       </label>
-                      <select id="subject" name="subject" required value={formData.subject} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900">
+                      <select id="subject" name="subject" required value={formData.subject} onChange={handleChange} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#FA7315] text-gray-900">
                         <option value="general">General Inquiry</option>
                         <option value="sales">Sales & Pricing</option>
                       </select>
@@ -179,7 +183,7 @@ export default function ContactPage() {
                     </div>
 
                     {/* Submit Button */}
-                    <Button type="submit" disabled={isSubmitting} size="lg" className="w-full bg-blue-600 text-white">
+                    <Button type="submit" disabled={isSubmitting} size="lg" className="w-full bg-[#FA7315] text-white hover:bg-orange-700">
                       {isSubmitting ? (
                         <>
                           <div className="w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -204,13 +208,13 @@ export default function ContactPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900">
-                  <Mail className="w-5 h-5 text-blue-600" />
+                  <Mail className="w-5 h-5 text-[#FA7315]" />
                   Email Us
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 text-sm mb-2">For general inquiries and sales:</p>
-                <a href="mailto:hello@bfsicampaigns.com" className="text-blue-600 hover:underline font-medium">
+                <a href="mailto:hello@bfsicampaigns.com" className="text-[#FA7315] hover:underline font-medium">
                   chithu@newgendigital.com
                 </a>
               </CardContent>
@@ -219,13 +223,13 @@ export default function ContactPage() {
             {/* <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900">
-                  <Phone className="w-5 h-5 text-blue-600" />
+                  <Phone className="w-5 h-5 text-[#FA7315]" />
                   Call Us
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 text-sm mb-2">Monday to Friday, 9 AM - 6 PM IST</p>
-                <a href="tel:+918800123456" className="text-blue-600 hover:underline font-medium text-lg">
+                <a href="tel:+918800123456" className="text-[#FA7315] hover:underline font-medium text-lg">
                   +91 88001 23456
                 </a>
               </CardContent>
@@ -234,7 +238,7 @@ export default function ContactPage() {
             {/* <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900">
-                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <MapPin className="w-5 h-5 text-[#FA7315]" />
                   Visit Us
                 </CardTitle>
               </CardHeader>
@@ -249,10 +253,10 @@ export default function ContactPage() {
               </CardContent>
             </Card> */}
 
-            <Card className="bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200">
+            <Card className="bg-gradient-to-br from-orange-100 to-orange-200 border-orange-200">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-gray-900">
-                  <Clock className="w-5 h-5 text-blue-600" />
+                  <Clock className="w-5 h-5 text-[#FA7315]" />
                   Response Time
                 </CardTitle>
               </CardHeader>
@@ -271,8 +275,8 @@ export default function ContactPage() {
           <div className="grid md:grid-cols-3 gap-6">
             <Card>
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
-                  <MessageSquare className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center mb-4">
+                  <MessageSquare className="w-6 h-6 text-[#FA7315]" />
                 </div>
                 <CardTitle className="text-gray-900">Product Demo</CardTitle>
                 <CardDescription>Schedule a personalized demo to see how our platform can transform your BFSI marketing campaigns.</CardDescription>

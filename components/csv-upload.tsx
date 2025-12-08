@@ -157,17 +157,17 @@ export function CsvUpload({ onUpload, maxRows = 10 }: CsvUploadProps) {
           {...getRootProps()}
           className={`border-2 border-dashed p-8 text-center cursor-pointer transition-colors ${
             isDragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-blue-400 hover:bg-gray-50'
+              ? 'border-orange-500 bg-orange-50'
+              : 'border-gray-300 hover:border-orange-400 hover:bg-gray-50'
           } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           <input {...getInputProps()} />
           <div className="flex flex-col items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-full bg-orange-100 flex items-center justify-center">
               {isProcessing ? (
-                <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <div className="w-8 h-8 border-4 border-[#FA7315] border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Upload className="w-8 h-8 text-blue-600" />
+                <Upload className="w-8 h-8 text-[#FA7315]" />
               )}
             </div>
             {isProcessing ? (

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { SignedIn, SignedOut, UserButton } from '@clerk/nextjs';
+import { Logo } from '@/components/logo';
 import {
   Sparkles,
   Upload,
@@ -12,7 +13,6 @@ import {
   CheckCircle,
   Download,
   Shield,
-  Zap,
   BarChart
 } from 'lucide-react';
 
@@ -57,12 +57,12 @@ export default function Home() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="border-b bg-white/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Zap className="w-6 h-6 text-blue-600" />
+          <div className="flex items-center gap-3">
+            <Logo />
             <span className="text-xl font-bold text-gray-900">BFSI Campaign Generator</span>
           </div>
           <nav className="flex items-center gap-4">
@@ -74,7 +74,7 @@ export default function Home() {
                 <Button variant="outline" className="text-gray-900 font-semibold border-gray-300">Login</Button>
               </Link>
               <Link href="/signup">
-                <Button variant="default" className="bg-blue-600 text-white font-semibold">Sign Up Free</Button>
+                <Button variant="default" className="bg-[#FA7315] text-white font-semibold hover:bg-orange-700">Sign Up Free</Button>
               </Link>
             </SignedOut>
             <SignedIn>
@@ -94,7 +94,7 @@ export default function Home() {
           Powered by AI
         </Badge>
 
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-[#FA7315] to-orange-600 bg-clip-text text-transparent">
           Create Compliant Marketing
           <br />
           Campaigns in Minutes
@@ -107,7 +107,7 @@ export default function Home() {
 
         <div className="flex gap-4 justify-center mb-12">
           <Link href="/create">
-            <Button size="lg" className="text-lg px-8 bg-blue-600 text-white font-semibold">
+            <Button size="lg" className="text-lg px-8 bg-[#FA7315] text-white font-semibold hover:bg-orange-700">
               <Sparkles className="w-5 h-5 mr-2" />
               Create Campaign
             </Button>
@@ -124,7 +124,7 @@ export default function Home() {
         <div className="flex flex-wrap justify-center gap-8 mb-20">
           {stats.map((stat, index) => (
             <div key={index} className="text-center">
-              <div className="text-3xl font-bold text-blue-600">{stat.value}</div>
+              <div className="text-3xl font-bold text-[#FA7315]">{stat.value}</div>
               <div className="text-sm text-gray-700 font-medium">{stat.label}</div>
             </div>
           ))}
@@ -136,7 +136,7 @@ export default function Home() {
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">
             Everything You Need for
-            <span className="text-blue-600"> Compliant Marketing</span>
+            <span className="text-[#FA7315]"> Compliant Marketing</span>
           </h2>
           <p className="text-lg text-gray-700 max-w-2xl mx-auto">
             Our platform handles the entire workflow from data upload to campaign delivery
@@ -147,8 +147,8 @@ export default function Home() {
           {features.map((feature, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow">
               <CardHeader>
-                <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center mb-4">
+                  <feature.icon className="w-6 h-6 text-[#FA7315]" />
                 </div>
                 <CardTitle>{feature.title}</CardTitle>
                 <CardDescription>{feature.description}</CardDescription>
@@ -177,7 +177,7 @@ export default function Home() {
             { step: '4', title: 'Download', description: 'Export your campaign results' },
           ].map((item, index) => (
             <div key={index} className="text-center">
-              <div className="w-16 h-16 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div className="w-16 h-16 rounded-full bg-[#FA7315] text-white flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 {item.step}
               </div>
               <h3 className="font-semibold text-lg mb-2 text-gray-900">{item.title}</h3>
@@ -189,7 +189,7 @@ export default function Home() {
 
       {/* CTA Section */}
       <section className="container mx-auto px-4 py-20 text-center">
-        <Card className="max-w-3xl mx-auto bg-gradient-to-r from-blue-600 to-purple-600 border-0 text-white">
+        <Card className="max-w-3xl mx-auto bg-gradient-to-r from-[#FA7315] to-orange-600 border-0 text-white">
           <CardHeader className="space-y-6 py-12">
             <CardTitle className="text-3xl md:text-4xl">
               Ready to Transform Your Marketing?

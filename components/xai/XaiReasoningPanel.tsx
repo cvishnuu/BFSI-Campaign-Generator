@@ -40,7 +40,7 @@ export function XaiReasoningPanel({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Brain className="w-5 h-5 text-blue-600" />
+          <Brain className="w-5 h-5 text-[#FA7315]" />
           {title}
         </CardTitle>
         <CardDescription>{description}</CardDescription>
@@ -85,7 +85,7 @@ export function XaiReasoningPanel({
                     </div>
                     <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-blue-500 rounded-full transition-all"
+                        className="h-full bg-[#FA7315] rounded-full transition-all"
                         style={{ width: `${contribution.weight * 100}%` }}
                       />
                     </div>

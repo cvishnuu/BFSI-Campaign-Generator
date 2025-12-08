@@ -66,6 +66,62 @@ router.get('/usage', async (req, res, next) => {
   }
 });
 
+// NEW: Validate and increment usage without executing workflow
+// Frontend will call this first, then call workflow API directly if validation passes
+router.post('/campaigns/validate-and-track', async (req, res, next) => {
+  try {
+    const parsed = executionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid payload', details: parsed.error.flatten() });
+    }
+
+    const userContext = getUserContext(req);
+    if (!userContext) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Ensure user exists in database (required for foreign key constraint)
+    await upsertUser(userContext.userId, userContext.email, userContext.name);
+
+    // Get current usage
+    const usage = await getUsage(userContext.userId);
+
+    // Enforce 10 row limit per campaign
+    const MAX_ROWS_PER_CAMPAIGN = 10;
+    if (parsed.data.csvData.length > MAX_ROWS_PER_CAMPAIGN) {
+      return res.status(400).json({
+        error: 'Row limit exceeded',
+        message: `Maximum ${MAX_ROWS_PER_CAMPAIGN} rows allowed per campaign. You uploaded ${parsed.data.csvData.length} rows. Please reduce the number of rows and try again.`,
+        limit: MAX_ROWS_PER_CAMPAIGN,
+        provided: parsed.data.csvData.length,
+      });
+    }
+
+    // Enforce 100 campaign limit (free tier)
+    const MAX_CAMPAIGNS = 100;
+    if (usage.campaignsGenerated >= MAX_CAMPAIGNS) {
+      return res.status(403).json({
+        error: 'Campaign limit reached',
+        message: `You have reached your free tier limit of ${MAX_CAMPAIGNS} campaigns. Please upgrade your plan to continue.`,
+        limit: MAX_CAMPAIGNS,
+        current: usage.campaignsGenerated,
+      });
+    }
+
+    // Track usage (increment campaign count and rows processed)
+    await incrementUsage(userContext.userId, 1, parsed.data.csvData.length);
+
+    // Return success - frontend will now call workflow API directly
+    res.status(200).json({
+      success: true,
+      message: 'Campaign validated and usage tracked. You can now proceed to execute the workflow.',
+      rowCount: parsed.data.csvData.length,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/campaigns/execute', async (req, res, next) => {
   try {
     const parsed = executionSchema.safeParse(req.body);
@@ -77,6 +133,9 @@ router.post('/campaigns/execute', async (req, res, next) => {
     if (!userContext) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+
+    // Ensure user exists in database (required for foreign key constraint)
+    await upsertUser(userContext.userId, userContext.email, userContext.name);
 
     // Get current usage
     const usage = await getUsage(userContext.userId);
