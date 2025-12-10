@@ -7,7 +7,6 @@
     "dev:frontend": "next dev",
     "dev:bff": "pnpm --filter @apps/bff dev",
     "build": "next build",
-    "build:all": "pnpm --filter @apps/bff build && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",

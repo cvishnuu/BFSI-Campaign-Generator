@@ -1,8 +1,9 @@
 {
-  "buildCommand": "pnpm exec next build",
+  "buildCommand": "pnpm build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "ignoreCommand": "bash -c 'git diff HEAD^ HEAD --quiet . \":(exclude)apps/bff\" && exit 1 || exit 0'",
+  "installCommand": "pnpm install --filter=!@apps/bff",
+  "ignoreCommand": "git diff HEAD^ HEAD --quiet . ':(exclude)apps/bff'",
   "headers": [
     {
       "source": "/(.*)",
