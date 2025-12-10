@@ -3,7 +3,7 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "pnpm install --filter=!@apps/bff",
-  "ignoreCommand": "git diff HEAD^ HEAD --quiet . ':(exclude)apps/bff'",
+  "ignoreCommand": "bash -c 'git diff HEAD^ HEAD --quiet . \":(exclude)apps/bff\" && exit 1 || exit 0'",
   "headers": [
     {
       "source": "/(.*)",
