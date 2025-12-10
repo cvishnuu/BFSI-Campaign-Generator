@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd /vercel/path0 && next build",
+  "buildCommand": "pnpm exec next build",
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "pnpm install --filter=!@apps/bff",
