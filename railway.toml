@@ -1,0 +1,8 @@
+[build]
+builder = "NIXPACKS"
+buildCommand = "cd apps/bff && npm install && npm run build"
+
+[deploy]
+startCommand = "cd apps/bff && npm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
